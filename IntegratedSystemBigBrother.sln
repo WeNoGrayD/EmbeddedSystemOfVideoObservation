@@ -5,6 +5,11 @@ VisualStudioVersion = 15.0.28307.1738
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegratedSystemBigBrother", "IntegratedSystemBigBrother\IntegratedSystemBigBrother.csproj", "{08E89DD3-35A1-4EB8-ADA2-5BDAC5091927}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegratedSystemBigBrotherTests", "IntegratedSystemBigBrotherTests\IntegratedSystemBigBrotherTests.csproj", "{21CEA9BA-3AD7-4F67-B23D-843582AFC412}"
+	ProjectSection(ProjectDependencies) = postProject
+		{08E89DD3-35A1-4EB8-ADA2-5BDAC5091927} = {08E89DD3-35A1-4EB8-ADA2-5BDAC5091927}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +20,10 @@ Global
 		{08E89DD3-35A1-4EB8-ADA2-5BDAC5091927}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08E89DD3-35A1-4EB8-ADA2-5BDAC5091927}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{08E89DD3-35A1-4EB8-ADA2-5BDAC5091927}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21CEA9BA-3AD7-4F67-B23D-843582AFC412}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21CEA9BA-3AD7-4F67-B23D-843582AFC412}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21CEA9BA-3AD7-4F67-B23D-843582AFC412}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21CEA9BA-3AD7-4F67-B23D-843582AFC412}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

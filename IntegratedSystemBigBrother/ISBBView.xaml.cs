@@ -18,11 +18,21 @@ namespace IntegratedSystemBigBrother
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class ISBBView : Window
     {
-        public MainWindow()
+        public ISBBView()
         {
             InitializeComponent();
+        }
+
+        private void EventLogSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            GridView eventLogGridView = (GridView)EventLog.View;
+            double eventLogActualWidth = EventLog.ActualWidth;
+            double[] columnWidthPercentage = new double[4] { 0.08, 0.21, 0.31, 0.4 };
+
+            for (int i = 0; i < columnWidthPercentage.Length; i++)
+                eventLogGridView.Columns[i].Width = eventLogActualWidth * columnWidthPercentage[i];
         }
     }
 }
