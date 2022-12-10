@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Drawing;
-using System.Windows;
 
 namespace IntegratedSystemBigBrother
 {
-    public class Camera
+    /// <summary>
+    /// Основная часть класса камеры.
+    /// </summary>
+    public partial class Camera
     {
         public delegate Task CameraScheduledBehaviorAsyncDelegate(
-            Camera cam, 
             TimeSpan duration, 
             params object[] additionParams);
 
@@ -19,9 +19,9 @@ namespace IntegratedSystemBigBrother
         
         public Func<CameraDataPackage> SendPackage;
 
-        public Func<Bitmap> MakeSnapshot;
+        //public Func<Bitmap> MakeSnapshot;
 
-        public Image
+        //public Image btmp;
 
         public Camera()
         {
@@ -48,64 +48,22 @@ namespace IntegratedSystemBigBrother
 
         public void AddStandardSituationToSchedule(TimeSpan duration)
         {
-            _behaviorSchedule.Add(async () => await SendStandardSituationDataPackage(this, duration));
+            _behaviorSchedule.Add(async () => await SetSendStandardSituationDataPackageBehavior(duration));
         }
 
         public void AddEmployeeArrivalToSchedule(TimeSpan duration, string employeeName)
         {
-            _behaviorSchedule.Add(async () => await SendEmployeeArrivalDataPackage(this, duration, employeeName));
+            _behaviorSchedule.Add(async () => await SetSendEmployeeArrivalDataPackageBehavior(duration, employeeName));
         }
 
         public void AddEmployeeDepartureToSchedule(TimeSpan duration, string employeeName)
         {
-            _behaviorSchedule.Add(async () => await SendEmployeeDepartureDataPackage(this, duration, employeeName));
+            _behaviorSchedule.Add(async () => await SetSendEmployeeDepartureDataPackageBehavior(duration, employeeName));
         }
 
         public void AddOutsiderOnObjectToSchedule(TimeSpan duration)
         {
-            _behaviorSchedule.Add(async () => await SendOutsiderOnObjectDataPackage(this, duration));
-        }
-
-        private async Task SendStandardSituationDataPackage(
-            Camera cam, 
-            TimeSpan duration,
-            params object[] additionParams)
-        {
-            SendPackage = () => new CameraStandardSituationDataPackage(DateTime.Now);
-            await Task.Delay(duration);
-            return;
-        }
-
-        private async Task SendEmployeeArrivalDataPackage(
-            Camera cam, 
-            TimeSpan duration,
-            params object[] additionParams)
-        {
-            string employeeName = (string)additionParams[0];
-            cam.SendPackage = () => new CameraEmployeeArrivalDataPackage(DateTime.Now, employeeName);
-            await Task.Delay(duration);
-            return;
-        }
-
-        private async Task SendEmployeeDepartureDataPackage(
-            Camera cam,
-            TimeSpan duration,
-            params object[] additionParams)
-        {
-            string employeeName = (string)additionParams[0];
-            cam.SendPackage = () => new CameraEmployeeDepartureDataPackage(DateTime.Now, employeeName);
-            await Task.Delay(duration);
-            return;
-        }
-
-        private async Task SendOutsiderOnObjectDataPackage(
-            Camera cam,
-            TimeSpan duration,
-            params object[] additionParams)
-        {
-            cam.SendPackage = () => new CameraOutsiderOnObjectDataPackage(DateTime.Now);
-            await Task.Delay(duration);
-            return;
+            _behaviorSchedule.Add(async () => await SetSendOutsiderOnObjectDataPackageBehavior(duration));
         }
     }
 }

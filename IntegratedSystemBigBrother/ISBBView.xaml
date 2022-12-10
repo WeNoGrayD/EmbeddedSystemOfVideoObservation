@@ -70,9 +70,15 @@
         <StackPanel Orientation="Vertical" 
                     Grid.Row="1" Grid.RowSpan="2" Grid.Column="2">
 
-            <Image Source="D:\\Bricker\\myAvatar256.png"></Image>
+            <!--<Image Source="D:\\Bricker\\myAvatar256.png"></Image>-->
 
         </StackPanel>
+
+        <Grid  Grid.Row="1" Grid.RowSpan="2" Grid.Column="2">
+            <Viewbox>
+                <Canvas Name="Screen" Width="100" Height="100"/>
+            </Viewbox>
+        </Grid>
 
     </Grid>
 </Window>

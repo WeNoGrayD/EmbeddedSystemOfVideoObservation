@@ -23,6 +23,16 @@ namespace IntegratedSystemBigBrother
         public ISBBView()
         {
             InitializeComponent();
+
+            Screen.Children.Add(Camera.Corridors[1]);
+            Camera.Corridors[1].Stroke = Brushes.Black;
+            Camera.Corridors[1].StrokeThickness = 0.05;
+
+            Path actor = Camera.DrawOutsider();
+            Screen.Children.Add(actor);
+            Canvas.SetTop(actor, 20);
+            Canvas.SetLeft(actor, 20);
+            actor.StrokeThickness = 0.1;
         }
 
         private void EventLogSizeChanged(object sender, SizeChangedEventArgs e)
