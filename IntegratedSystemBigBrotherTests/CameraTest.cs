@@ -23,6 +23,7 @@ namespace IntegratedSystemBigBrotherTests
         [TestMethod]
         public async Task SimpleTest()
         {
+            /*
             using (StreamWriter log = new StreamWriter(new FileStream(@"../../TestLog/CameraTest/SimpleTest.txt", FileMode.OpenOrCreate)))
             {
                 cam = new Camera();
@@ -50,6 +51,7 @@ namespace IntegratedSystemBigBrotherTests
                 cdp = cam.SendPackage();
                 log.WriteLine(cdp.TimeStamp.ToString() + ": " + cdp.GetMessage());
             }
+            */
         }
     }
 }

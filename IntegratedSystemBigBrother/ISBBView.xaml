@@ -74,11 +74,10 @@
 
         </StackPanel>
 
-        <Grid  Grid.Row="1" Grid.RowSpan="2" Grid.Column="2">
-            <Viewbox>
-                <Canvas Name="Screen" Width="100" Height="100"/>
-            </Viewbox>
-        </Grid>
+        <Viewbox Grid.Row="1" Grid.RowSpan="2" Grid.Column="2"
+                 Margin="10, 10, 10, 10">
+            <Grid Name="Screen" Width="12" Height="8"/>
+        </Viewbox>
 
     </Grid>
 </Window>

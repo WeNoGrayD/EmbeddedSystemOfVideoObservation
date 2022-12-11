@@ -6,44 +6,43 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Shapes;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Controls;
 
 namespace IntegratedSystemBigBrother
 {
     /// <summary>
-    /// Часть класса камеры, которая выполняет работу по настройке поведения камеры.
+    /// Часть класса камеры, которая выполняет работу по настройке поведения камеры
+    /// и по рисованию, также объявляются абстрактные методы рисования коридора и анимации актёра.
     /// </summary>
-    public partial class Camera
+    public abstract partial class Camera
     {
-        public static Path[] Corridors;
-
-        static Camera()
-        {
-            Corridors = new Path[3];
-            DrawCorridor1();
-            DrawCorridor2();
-            DrawCorridor3();
-        }
-
         static Path DrawActor()
         {
             PathGeometry actorGeometry = new PathGeometry();
 
-            PathFigure headAndBody = new PathFigure() { StartPoint = new Point(2, 6)};
+            PathFigure headAndBody = new PathFigure() { StartPoint = new Point(2, 6), IsFilled = true };
             headAndBody.Segments.Add(new LineSegment(new Point(2, 3), true));
             headAndBody.Segments.Add(new ArcSegment(new Point(2, 0), new Size(1.5, 1.5), 0, true, SweepDirection.Clockwise, true));
             headAndBody.Segments.Add(new ArcSegment(new Point(2, 3), new Size(1.5, 1.5), 0, false, SweepDirection.Clockwise, true));
 
-            PathFigure arms = new PathFigure() { StartPoint = new Point(0, 6) };
+            PathFigure arms = new PathFigure() { StartPoint = new Point(0, 6), IsFilled = false };
             arms.Segments.Add(new PolyLineSegment(new Point[] { new Point(2, 3), new Point(4, 6) }, true));
 
-            PathFigure legs = new PathFigure() { StartPoint = new Point(0, 9) };
+            PathFigure legs = new PathFigure() { StartPoint = new Point(0, 9), IsFilled = false };
             legs.Segments.Add(new PolyLineSegment(new Point[] { new Point(2, 6), new Point(4, 9) }, true));
 
             actorGeometry.Figures.Add(headAndBody);
             actorGeometry.Figures.Add(arms);
             actorGeometry.Figures.Add(legs);
 
-            Path actor = new Path() { Data = actorGeometry, RenderTransform = new ScaleTransform(10, 10) };
+            Path actor = new Path()
+            {
+                Data = actorGeometry,
+                Fill = Brushes.White,
+                LayoutTransform = new ScaleTransform(0.5, 0.5)
+            };
+            Grid.SetZIndex(actor, 1);
             return actor;
         }
 
@@ -61,76 +60,114 @@ namespace IntegratedSystemBigBrother
             return outsider;
         }
 
-        static void DrawCorridor1()
+        public abstract void DrawCorridor();
+
+        public abstract Storyboard BuildEmployeeArrivalAnimation(
+            Path employee,
+            TimeSpan duration,
+            Panel screen);
+
+        public abstract Storyboard BuildEmployeeDepartureAnimation(
+            Path employee,
+            TimeSpan duration,
+            Panel screen);
+
+        public abstract Storyboard BuildOutsiderOnObjectAnimation(
+            Path outsider,
+            TimeSpan duration,
+            Panel screen);
+
+        protected static void SetDesiredFrameRateForStoryboard(Storyboard animations)
         {
-            PathGeometry corridorGeometry = new PathGeometry();
-
-            PathFigure trapezoidLeft = new PathFigure() { StartPoint = new Point(0, 0) };
-            trapezoidLeft.Segments.Add(new PolyLineSegment(new Point[] { new Point(0, 8), new Point(5, 6), new Point(5, 3), new Point(0, 0) }, true));
-
-            PathFigure trapezoidRight = new PathFigure() { StartPoint = new Point(12, 0) };
-            trapezoidRight.Segments.Add(new PolyLineSegment(new Point[] { new Point(12, 8), new Point(10, 6), new Point(10, 3), new Point(12, 0) }, true));
-
-            PathFigure trapezoidTop = new PathFigure() { StartPoint = new Point(0, 0) };
-            trapezoidTop.Segments.Add(new PolyLineSegment(new Point[] { new Point(5, 3), new Point(10, 3), new Point(12, 0), new Point(0, 0) }, true));
-
-            PathFigure trapezoidBottom = new PathFigure() { StartPoint = new Point(12, 8) };
-            trapezoidBottom.Segments.Add(new PolyLineSegment(new Point[] { new Point(10, 6), new Point(5, 6), new Point(0, 8), new Point(12, 8) }, true));
-
-            corridorGeometry.Figures.Add(trapezoidLeft);
-            corridorGeometry.Figures.Add(trapezoidRight);
-            corridorGeometry.Figures.Add(trapezoidTop);
-            corridorGeometry.Figures.Add(trapezoidBottom);
-
-            Corridors[0] = new Path() { Data = corridorGeometry, RenderTransform = new ScaleTransform(10, 10) };
+            foreach (Timeline animation in animations.Children)
+                Storyboard.SetDesiredFrameRate(animation, 30);
         }
 
-        static void DrawCorridor2()
+        protected static void MakeActorDisappearFromScreen(
+            Path actor,
+            Panel screen,
+            Storyboard animation)
         {
-            PathGeometry corridorGeometry = new PathGeometry();
-
-            PathFigure trapezoidLeft = new PathFigure() { StartPoint = new Point(0, 0) };
-            trapezoidLeft.Segments.Add(new PolyLineSegment(new Point[] { new Point(0, 8), new Point(1, 6), new Point(1, 3), new Point(0, 0) }, true));
-
-            PathFigure trapezoidRight = new PathFigure() { StartPoint = new Point(12, 0) };
-            trapezoidRight.Segments.Add(new PolyLineSegment(new Point[] { new Point(12, 8), new Point(11, 6), new Point(11, 3), new Point(12, 0) }, true));
-
-            PathFigure trapezoidTop = new PathFigure() { StartPoint = new Point(0, 0) };
-            trapezoidTop.Segments.Add(new PolyLineSegment(new Point[] { new Point(1, 3), new Point(11, 3), new Point(12, 0), new Point(0, 0) }, true));
-
-            PathFigure trapezoidBottom = new PathFigure() { StartPoint = new Point(12, 8) };
-            trapezoidBottom.Segments.Add(new PolyLineSegment(new Point[] { new Point(11, 6), new Point(1, 6), new Point(0, 8), new Point(12, 8) }, true));
-
-            corridorGeometry.Figures.Add(trapezoidLeft);
-            corridorGeometry.Figures.Add(trapezoidRight);
-            corridorGeometry.Figures.Add(trapezoidTop);
-            corridorGeometry.Figures.Add(trapezoidBottom);
-
-            Corridors[1] = new Path() { Data = corridorGeometry, RenderTransform = new ScaleTransform(10, 10) };
+            animation.Completed += (sender, e) => screen.Children.Remove(actor);
         }
 
-        static void DrawCorridor3()
+        protected static void SetMarginActorProperty(Timeline animation)
         {
-            PathGeometry corridorGeometry = new PathGeometry();
+            Storyboard.SetTargetProperty(animation, new PropertyPath(Path.MarginProperty));
+        }
 
-            PathFigure trapezoidLeft = new PathFigure() { StartPoint = new Point(0, 0) };
-            trapezoidLeft.Segments.Add(new PolyLineSegment(new Point[] { new Point(2, 3), new Point(2, 6), new Point(0, 8), new Point(0, 0) }, true));
+        protected static void SetScaleXActorProperty(Timeline animation)
+        {
+            Storyboard.SetTargetProperty(animation, new PropertyPath($"LayoutTransform." + ScaleTransform.ScaleXProperty));
+        }
 
-            PathFigure trapezoidRight = new PathFigure() { StartPoint = new Point(12, 0) };
-            trapezoidRight.Segments.Add(new PolyLineSegment(new Point[] { new Point(12, 8), new Point(7, 6), new Point(7, 3), new Point(12, 0) }, true));
+        protected static void SetScaleYActorProperty(Timeline animation)
+        {
+            Storyboard.SetTargetProperty(animation, new PropertyPath($"LayoutTransform." + ScaleTransform.ScaleYProperty));
+        }
 
-            PathFigure trapezoidTop = new PathFigure() { StartPoint = new Point(0, 0) };
-            trapezoidTop.Segments.Add(new PolyLineSegment(new Point[] { new Point(2, 3), new Point(7, 3), new Point(12, 0), new Point(0, 0) }, true));
+        protected static void SetStrokeThicknessActorProperty(Timeline animation)
+        {
+            Storyboard.SetTargetProperty(animation, new PropertyPath(Path.StrokeThicknessProperty));
+        }
 
-            PathFigure trapezoidBottom = new PathFigure() { StartPoint = new Point(12, 8) };
-            trapezoidBottom.Segments.Add(new PolyLineSegment(new Point[] { new Point(7, 6), new Point(2, 6), new Point(0, 8), new Point(12, 8) }, true));
+        public static Storyboard BuildEmployeeArrivalInCorridor2Animation(
+            Path employee,
+            TimeSpan duration,
+            Panel screen)
+        {
+            return null;
+        }
 
-            corridorGeometry.Figures.Add(trapezoidLeft);
-            corridorGeometry.Figures.Add(trapezoidRight);
-            corridorGeometry.Figures.Add(trapezoidTop);
-            corridorGeometry.Figures.Add(trapezoidBottom);
+        public static Storyboard BuildEmployeeArrivalInCorridor3Animation(
+            Path employee,
+            TimeSpan duration,
+            Panel screen)
+        {
+            return null;
+        }
 
-            Corridors[2] = new Path() { Data = corridorGeometry, RenderTransform = new ScaleTransform(10, 10) };
+        public static Storyboard BuildEmployeeDepartureFromCorridor1Animation(
+            Path employee,
+            TimeSpan duration,
+            Panel screen)
+        {
+            ThicknessAnimation employeeMovingAnimation = new ThicknessAnimation();
+            employeeMovingAnimation.From = new Thickness();
+
+            return null;
+        }
+
+        public static Storyboard BuildEmployeeDepartureFromCorridor2Animation(
+            Path employee,
+            TimeSpan duration,
+            Panel screen)
+        {
+            return null;
+        }
+
+        public static Storyboard BuildEmployeeDepartureFromCorridor3Animation(
+            Path employee,
+            TimeSpan duration,
+            Panel screen)
+        {
+            return null;
+        }
+
+        public static Storyboard BuildOutsiderInCorridor2Animation(
+            Path outsider, 
+            TimeSpan duration,
+            Panel screen)
+        {
+            return null;
+        }
+
+        public static Storyboard BuildOutsiderInCorridor3Animation(
+            Path outsider, 
+            TimeSpan duration,
+            Panel screen)
+        {
+            return null;
         }
 
         public async Task SetSendStandardSituationDataPackageBehavior(

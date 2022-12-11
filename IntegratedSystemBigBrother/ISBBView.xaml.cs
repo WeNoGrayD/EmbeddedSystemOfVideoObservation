@@ -24,15 +24,20 @@ namespace IntegratedSystemBigBrother
         {
             InitializeComponent();
 
-            Screen.Children.Add(Camera.Corridors[1]);
-            Camera.Corridors[1].Stroke = Brushes.Black;
-            Camera.Corridors[1].StrokeThickness = 0.05;
+            Camera cam = new CameraWatchingFromWallCentre();
 
-            Path actor = Camera.DrawOutsider();
-            Screen.Children.Add(actor);
-            Canvas.SetTop(actor, 20);
-            Canvas.SetLeft(actor, 20);
-            actor.StrokeThickness = 0.1;
+            Screen.Children.Add(cam.Corridor);
+
+            Path employee = Camera.DrawEmployee(),
+                 outsider = Camera.DrawOutsider();
+            Screen.Children.Add(employee);
+            //Screen.Children.Add(outsider);
+            //Canvas.SetTop(actor, 20);
+            //Canvas.SetLeft(actor, 20);
+            //actor.Margin = new Thickness(8, 1, 0, 0);
+            //employee.BeginStoryboard(cam.BuildEmployeeArrivalAnimation(employee, TimeSpan.FromSeconds(10), Screen));
+            employee.BeginStoryboard(cam.BuildEmployeeDepartureAnimation(employee, TimeSpan.FromSeconds(10), Screen));
+            //outsider.BeginStoryboard(cam.BuildOutsiderOnObjectAnimation(outsider, TimeSpan.FromSeconds(10), Screen));
         }
 
         private void EventLogSizeChanged(object sender, SizeChangedEventArgs e)

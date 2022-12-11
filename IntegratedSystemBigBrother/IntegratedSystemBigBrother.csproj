@@ -68,6 +68,9 @@
     <Compile Include="CameraDataPackage.cs" />
     <Compile Include="CameraHelper.cs" />
     <Compile Include="CameraMessageImportanceEnumToImageConverter.cs" />
+    <Compile Include="CameraWatchingFromLeftCornerWall.cs" />
+    <Compile Include="CameraWatchingFromRightCornerWall.cs" />
+    <Compile Include="CameraWatchingFromWallCentre.cs" />
     <Compile Include="CentralProcessor.cs" />
     <Compile Include="ISBBView.xaml.cs">
       <DependentUpon>ISBBView.xaml</DependentUpon>
