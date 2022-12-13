@@ -9,23 +9,28 @@ namespace IntegratedSystemBigBrother
     /// <summary>
     /// Класс, отвечающий за работу с камерой.
     /// </summary>
-    public class PeripheralProcessor
+    public class PeripheralProcessor : IEquatable<PeripheralProcessor>
     {
-        private Camera _camera;
+        public readonly Camera AgregatedCamera;
 
         public readonly string CameraName;
         
         public PeripheralProcessor(Camera camera, string cameraName)
         {
-            _camera = camera;
+            AgregatedCamera = camera;
             CameraName = cameraName;
         }
 
         public CameraDataPackage SendPackage()
         {
-            CameraDataPackage package = _camera.SendPackage();
+            CameraDataPackage package = AgregatedCamera.SendPackage();
             package.CameraName = this.CameraName;
             return package;
+        }
+
+        public bool Equals(PeripheralProcessor other)
+        {
+            return this.CameraName == other.CameraName;
         }
     }
 }

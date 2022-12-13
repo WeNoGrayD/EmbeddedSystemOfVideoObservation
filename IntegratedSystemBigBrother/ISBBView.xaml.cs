@@ -20,12 +20,17 @@ namespace IntegratedSystemBigBrother
     /// </summary>
     public partial class ISBBView : Window
     {
+        public readonly CentralProcessor MainProc;
+
         public ISBBView()
         {
             InitializeComponent();
 
-            Camera cam = new CameraWatchingFromWallCentre();
+            ISBBViewModel.View = this;
 
+            /*Camera cam = new CameraWatchingFromWallCentre();
+
+            
             Screen.Children.Add(cam.Corridor);
 
             Path employee = Camera.DrawEmployee(),
@@ -38,16 +43,17 @@ namespace IntegratedSystemBigBrother
             //employee.BeginStoryboard(cam.BuildEmployeeArrivalAnimation(employee, TimeSpan.FromSeconds(10), Screen));
             employee.BeginStoryboard(cam.BuildEmployeeDepartureAnimation(employee, TimeSpan.FromSeconds(10), Screen));
             //outsider.BeginStoryboard(cam.BuildOutsiderOnObjectAnimation(outsider, TimeSpan.FromSeconds(10), Screen));
+            */
         }
 
-        private void EventLogSizeChanged(object sender, SizeChangedEventArgs e)
+        private void OnCameraSelectorSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            GridView eventLogGridView = (GridView)EventLog.View;
-            double eventLogActualWidth = EventLog.ActualWidth;
-            double[] columnWidthPercentage = new double[4] { 0.08, 0.21, 0.31, 0.4 };
+            ISBBViewModel.OnCameraSelectorSelectionChanged(sender, e);
+        }
 
-            for (int i = 0; i < columnWidthPercentage.Length; i++)
-                eventLogGridView.Columns[i].Width = eventLogActualWidth * columnWidthPercentage[i];
+        private void OnEventLogSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ISBBViewModel.OnEventLogSizeChanged(sender, e);
         }
     }
 }

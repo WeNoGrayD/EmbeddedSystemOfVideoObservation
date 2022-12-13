@@ -67,17 +67,21 @@
     <Compile Include="Camera.cs" />
     <Compile Include="CameraDataPackage.cs" />
     <Compile Include="CameraHelper.cs" />
+    <Compile Include="CameraListener.cs" />
     <Compile Include="CameraMessageImportanceEnumToImageConverter.cs" />
     <Compile Include="CameraWatchingFromLeftCornerWall.cs" />
     <Compile Include="CameraWatchingFromRightCornerWall.cs" />
     <Compile Include="CameraWatchingFromWallCentre.cs" />
     <Compile Include="CentralProcessor.cs" />
+    <Compile Include="DispatchHelper.cs" />
     <Compile Include="ISBBView.xaml.cs">
       <DependentUpon>ISBBView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ISBBViewModel.cs" />
+    <Compile Include="ObservableDictionary.cs" />
     <Compile Include="ObservableJaggedArray.cs" />
     <Compile Include="ObservableMatrix.cs" />
     <Compile Include="PeripheralProcessor.cs" />

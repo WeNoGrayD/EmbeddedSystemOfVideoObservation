@@ -27,10 +27,16 @@ namespace IntegratedSystemBigBrother
 
         public string CameraName { get; set; }
 
-        protected CameraDataPackage(DateTime timeStamp, EventDescription messageImportance)
+        public readonly bool IsFirstInSeries;
+
+        protected CameraDataPackage(
+            DateTime timeStamp, 
+            EventDescription messageImportance,
+            bool isFirstInSeries)
         {
             TimeStamp = timeStamp;
             MessageImportance = messageImportance;
+            IsFirstInSeries = isFirstInSeries;
         }
 
         public abstract void Accept(ICameraDataPackageVisitor reader);
@@ -43,7 +49,10 @@ namespace IntegratedSystemBigBrother
     /// </summary>
     public interface ICameraDataPackageVisitor
     {
-        void Visit(CameraDataPackage package);
+        void Visit(CameraStandardSituationDataPackage package);
+        void Visit(CameraEmployeeArrivalDataPackage package);
+        void Visit(CameraEmployeeDepartureDataPackage package);
+        void Visit(CameraOutsiderOnObjectDataPackage package);
     }
 
     /// <summary>
@@ -51,8 +60,8 @@ namespace IntegratedSystemBigBrother
     /// </summary>
     public class CameraStandardSituationDataPackage : CameraDataPackage
     {
-        public CameraStandardSituationDataPackage(DateTime timeStamp)
-            : base(timeStamp, EventDescription.StandardSituation)
+        public CameraStandardSituationDataPackage(DateTime timeStamp, bool isFirstInSeries)
+            : base(timeStamp, EventDescription.StandardSituation, isFirstInSeries)
         { }
 
         public override void Accept(ICameraDataPackageVisitor reader)
@@ -71,8 +80,11 @@ namespace IntegratedSystemBigBrother
         public readonly string EmployeeName;
 
         protected CameraEmployeeEventDataPackage(
-            DateTime timeStamp, EventDescription messageImportance, string employeeName)
-            : base(timeStamp, messageImportance)
+            DateTime timeStamp, 
+            EventDescription messageImportance,
+            bool isFirstInSeries, 
+            string employeeName)
+            : base(timeStamp, messageImportance, isFirstInSeries)
         {
             EmployeeName = employeeName;
         }
@@ -83,8 +95,11 @@ namespace IntegratedSystemBigBrother
     /// </summary>
     public class CameraEmployeeArrivalDataPackage : CameraEmployeeEventDataPackage
     {
-        public CameraEmployeeArrivalDataPackage(DateTime timeStamp, string employeeName)
-            : base(timeStamp, EventDescription.EmployeeArrival, employeeName)
+        public CameraEmployeeArrivalDataPackage(
+            DateTime timeStamp, 
+            bool isFirstInSeries, 
+            string employeeName)
+            : base(timeStamp, EventDescription.EmployeeArrival, isFirstInSeries, employeeName)
         { }
 
         public override void Accept(ICameraDataPackageVisitor reader)
@@ -100,8 +115,8 @@ namespace IntegratedSystemBigBrother
     /// </summary>
     public class CameraEmployeeDepartureDataPackage : CameraEmployeeEventDataPackage
     {
-        public CameraEmployeeDepartureDataPackage(DateTime timeStamp, string employeeName)
-            : base(timeStamp, EventDescription.EmployeeDeparture, employeeName)
+        public CameraEmployeeDepartureDataPackage(DateTime timeStamp, bool isFirstInSeries, string employeeName)
+            : base(timeStamp, EventDescription.EmployeeDeparture, isFirstInSeries, employeeName)
         { }
 
         public override void Accept(ICameraDataPackageVisitor reader)
@@ -117,8 +132,8 @@ namespace IntegratedSystemBigBrother
     /// </summary>
     public class CameraOutsiderOnObjectDataPackage : CameraDataPackage
     {
-        public CameraOutsiderOnObjectDataPackage(DateTime timeStamp)
-            : base(timeStamp, EventDescription.OutsiderOnObject)
+        public CameraOutsiderOnObjectDataPackage(DateTime timeStamp, bool isFirstInSeries)
+            : base(timeStamp, EventDescription.OutsiderOnObject, isFirstInSeries)
         { }
 
         public override void Accept(ICameraDataPackageVisitor reader)
@@ -129,6 +144,7 @@ namespace IntegratedSystemBigBrother
         public override string GetMessage() => $"Замечен посторонний!";
     }
 
+    /*
     /// <summary>
     /// Пакет данных, свидетельствующий о ведении съёмки.
     /// </summary>
@@ -152,4 +168,5 @@ namespace IntegratedSystemBigBrother
 
         public override string GetMessage() => $"Ведётся съёмка.";
     }
+    */
 }

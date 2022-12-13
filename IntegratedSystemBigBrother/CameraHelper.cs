@@ -64,31 +64,20 @@ namespace IntegratedSystemBigBrother
 
         public abstract Storyboard BuildEmployeeArrivalAnimation(
             Path employee,
-            TimeSpan duration,
-            Panel screen);
+            TimeSpan duration);
 
         public abstract Storyboard BuildEmployeeDepartureAnimation(
             Path employee,
-            TimeSpan duration,
-            Panel screen);
+            TimeSpan duration);
 
         public abstract Storyboard BuildOutsiderOnObjectAnimation(
             Path outsider,
-            TimeSpan duration,
-            Panel screen);
+            TimeSpan duration);
 
         protected static void SetDesiredFrameRateForStoryboard(Storyboard animations)
         {
             foreach (Timeline animation in animations.Children)
                 Storyboard.SetDesiredFrameRate(animation, 30);
-        }
-
-        protected static void MakeActorDisappearFromScreen(
-            Path actor,
-            Panel screen,
-            Storyboard animation)
-        {
-            animation.Completed += (sender, e) => screen.Children.Remove(actor);
         }
 
         protected static void SetMarginActorProperty(Timeline animation)
@@ -111,70 +100,11 @@ namespace IntegratedSystemBigBrother
             Storyboard.SetTargetProperty(animation, new PropertyPath(Path.StrokeThicknessProperty));
         }
 
-        public static Storyboard BuildEmployeeArrivalInCorridor2Animation(
-            Path employee,
-            TimeSpan duration,
-            Panel screen)
-        {
-            return null;
-        }
-
-        public static Storyboard BuildEmployeeArrivalInCorridor3Animation(
-            Path employee,
-            TimeSpan duration,
-            Panel screen)
-        {
-            return null;
-        }
-
-        public static Storyboard BuildEmployeeDepartureFromCorridor1Animation(
-            Path employee,
-            TimeSpan duration,
-            Panel screen)
-        {
-            ThicknessAnimation employeeMovingAnimation = new ThicknessAnimation();
-            employeeMovingAnimation.From = new Thickness();
-
-            return null;
-        }
-
-        public static Storyboard BuildEmployeeDepartureFromCorridor2Animation(
-            Path employee,
-            TimeSpan duration,
-            Panel screen)
-        {
-            return null;
-        }
-
-        public static Storyboard BuildEmployeeDepartureFromCorridor3Animation(
-            Path employee,
-            TimeSpan duration,
-            Panel screen)
-        {
-            return null;
-        }
-
-        public static Storyboard BuildOutsiderInCorridor2Animation(
-            Path outsider, 
-            TimeSpan duration,
-            Panel screen)
-        {
-            return null;
-        }
-
-        public static Storyboard BuildOutsiderInCorridor3Animation(
-            Path outsider, 
-            TimeSpan duration,
-            Panel screen)
-        {
-            return null;
-        }
-
         public async Task SetSendStandardSituationDataPackageBehavior(
             TimeSpan duration,
             params object[] additionParams)
         {
-            SendPackage = () => new CameraStandardSituationDataPackage(DateTime.Now);
+            SendPackage = () => new CameraStandardSituationDataPackage(DateTime.Now, IsFirstPackageInSeries);
             await Task.Delay(duration);
             return;
         }
@@ -184,8 +114,12 @@ namespace IntegratedSystemBigBrother
             params object[] additionParams)
         {
             string employeeName = (string)additionParams[0];
-            SendPackage = () => new CameraEmployeeArrivalDataPackage(DateTime.Now, employeeName);
+            SendPackage = () => new CameraEmployeeArrivalDataPackage(DateTime.Now, IsFirstPackageInSeries, employeeName);
+            Animation = BuildEmployeeArrivalAnimation(Actor, TimeSpan.FromSeconds(10));
+            Animation.RepeatBehavior = RepeatBehavior.Forever;
+            //Actor.BeginStoryboard(Animation);
             await Task.Delay(duration);
+            Animation.Stop();
             return;
         }
 
@@ -194,8 +128,13 @@ namespace IntegratedSystemBigBrother
             params object[] additionParams)
         {
             string employeeName = (string)additionParams[0];
-            SendPackage = () => new CameraEmployeeDepartureDataPackage(DateTime.Now, employeeName);
+            SendPackage = () => new CameraEmployeeDepartureDataPackage(DateTime.Now, IsFirstPackageInSeries, employeeName);
+            Actor = DrawEmployee();
+            Animation = BuildEmployeeDepartureAnimation(Actor, TimeSpan.FromSeconds(10));
+            Animation.RepeatBehavior = RepeatBehavior.Forever;
+            Actor.BeginStoryboard(Animation);
             await Task.Delay(duration);
+            Animation.Stop();
             return;
         }
 
@@ -203,8 +142,13 @@ namespace IntegratedSystemBigBrother
             TimeSpan duration,
             params object[] additionParams)
         {
-            SendPackage = () => new CameraOutsiderOnObjectDataPackage(DateTime.Now);
+            SendPackage = () => new CameraOutsiderOnObjectDataPackage(DateTime.Now, IsFirstPackageInSeries);
+            Actor = DrawEmployee();
+            Animation = BuildOutsiderOnObjectAnimation(Actor, TimeSpan.FromSeconds(10));
+            Animation.RepeatBehavior = RepeatBehavior.Forever;
+            Actor.BeginStoryboard(Animation);
             await Task.Delay(duration);
+            Animation.Stop();
             return;
         }
     }

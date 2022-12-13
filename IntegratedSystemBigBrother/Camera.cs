@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Shapes;
+using System.Windows.Media.Animation;
 
 namespace IntegratedSystemBigBrother
 {
@@ -20,14 +21,33 @@ namespace IntegratedSystemBigBrother
         
         public Func<CameraDataPackage> SendPackage;
 
+        private bool _isFirstPackageInSeries;
+        public bool IsFirstPackageInSeries
+        {
+            get
+            {
+                bool saved = _isFirstPackageInSeries;
+                _isFirstPackageInSeries = false;
+                return saved;
+            }
+            set
+            {
+                _isFirstPackageInSeries = value;
+            }
+        }
+
         public Path Corridor { get; protected set; }
+
+        public Path Actor { get; protected set; }
+
+        public Storyboard Animation { get; protected set; }
 
         public Camera()
         {
             DrawCorridor();
-            SendPackage = () => new CameraStandardSituationDataPackage(DateTime.Now);
+            SendPackage = () => new CameraStandardSituationDataPackage(DateTime.Now, IsFirstPackageInSeries);
             _behaviorSchedule = new List<Func<Task>>();
-            Task.Run((Action)ScheduleLoop);
+             Task.Run((Action)ScheduleLoop);
         }
 
         public Camera(List<Func<Task>> behaviorSchedule) : this()
@@ -41,6 +61,8 @@ namespace IntegratedSystemBigBrother
             {
                 foreach (Func<Task> behavior in _behaviorSchedule)
                 {
+                    Animation?.Stop();
+                    IsFirstPackageInSeries = true;
                     await behavior();
                 }
             }
@@ -48,22 +70,34 @@ namespace IntegratedSystemBigBrother
 
         public void AddStandardSituationToSchedule(TimeSpan duration)
         {
-            _behaviorSchedule.Add(async () => await SetSendStandardSituationDataPackageBehavior(duration));
+            _behaviorSchedule.Add(async () =>
+            {
+                await SetSendStandardSituationDataPackageBehavior(duration);
+            });
         }
 
         public void AddEmployeeArrivalToSchedule(TimeSpan duration, string employeeName)
         {
-            _behaviorSchedule.Add(async () => await SetSendEmployeeArrivalDataPackageBehavior(duration, employeeName));
+            _behaviorSchedule.Add(async () =>
+            {
+                await SetSendEmployeeArrivalDataPackageBehavior(duration, employeeName);
+            });
         }
 
         public void AddEmployeeDepartureToSchedule(TimeSpan duration, string employeeName)
         {
-            _behaviorSchedule.Add(async () => await SetSendEmployeeDepartureDataPackageBehavior(duration, employeeName));
+            _behaviorSchedule.Add(async () =>
+            {
+                await SetSendEmployeeDepartureDataPackageBehavior(duration, employeeName);
+            });
         }
 
         public void AddOutsiderOnObjectToSchedule(TimeSpan duration)
         {
-            _behaviorSchedule.Add(async () => await SetSendOutsiderOnObjectDataPackageBehavior(duration));
+            _behaviorSchedule.Add(async () =>
+            {
+                await SetSendOutsiderOnObjectDataPackageBehavior(duration);
+            });
         }
     }
 }

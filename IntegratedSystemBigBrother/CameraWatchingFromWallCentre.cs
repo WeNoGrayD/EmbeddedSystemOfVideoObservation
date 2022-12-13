@@ -47,8 +47,7 @@ namespace IntegratedSystemBigBrother
 
         public override Storyboard BuildEmployeeArrivalAnimation(
             Path employee,
-            TimeSpan duration,
-            Panel screen)
+            TimeSpan duration)
         {
             employee.StrokeThickness = 0.3;
 
@@ -57,21 +56,22 @@ namespace IntegratedSystemBigBrother
             ThicknessAnimation employeeForwardMovingAnimation =
                 new ThicknessAnimation(movingFrom, movingTo, duration) { FillBehavior = FillBehavior.HoldEnd };
 
-            Storyboard employeeStoryboard = new Storyboard();
+            Storyboard employeeStoryboard = new Storyboard()
+            {
+                RepeatBehavior = RepeatBehavior.Forever
+            };
             employeeStoryboard.Children.Add(employeeForwardMovingAnimation);
 
             SetMarginActorProperty(employeeForwardMovingAnimation);
 
             SetDesiredFrameRateForStoryboard(employeeStoryboard);
-            MakeActorDisappearFromScreen(employee, screen, employeeStoryboard);
 
             return employeeStoryboard;
         }
 
         public override Storyboard BuildEmployeeDepartureAnimation(
             Path employee,
-            TimeSpan duration,
-            Panel screen)
+            TimeSpan duration)
         {
             employee.StrokeThickness = 0.3;
 
@@ -80,21 +80,22 @@ namespace IntegratedSystemBigBrother
             ThicknessAnimation employeeBackwardMovingAnimation =
                 new ThicknessAnimation(movingFrom, movingTo, duration) { FillBehavior = FillBehavior.HoldEnd };
             
-            Storyboard employeeStoryboard = new Storyboard();
+            Storyboard employeeStoryboard = new Storyboard()
+            {
+                RepeatBehavior = RepeatBehavior.Forever
+            };
             employeeStoryboard.Children.Add(employeeBackwardMovingAnimation);
 
             SetMarginActorProperty(employeeBackwardMovingAnimation);
 
             SetDesiredFrameRateForStoryboard(employeeStoryboard);
-            MakeActorDisappearFromScreen(employee, screen, employeeStoryboard);
 
             return employeeStoryboard;
         }
 
         public override Storyboard BuildOutsiderOnObjectAnimation(
             Path outsider,
-            TimeSpan duration,
-            Panel screen)
+            TimeSpan duration)
         {
             outsider.StrokeThickness = 0.3;
 
@@ -111,7 +112,11 @@ namespace IntegratedSystemBigBrother
                     BeginTime = duration + backwardAnimationDelay
                 };
 
-            Storyboard outsiderStoryboard = new Storyboard() { Duration = duration + duration + backwardAnimationDelay };
+            Storyboard outsiderStoryboard = new Storyboard()
+            {
+                Duration = duration + duration + backwardAnimationDelay,
+                RepeatBehavior = RepeatBehavior.Forever
+            };
             outsiderStoryboard.Children.Add(outsiderForwardMovingAnimation);
             outsiderStoryboard.Children.Add(outsiderBackwardMovingAnimation);
 
@@ -119,7 +124,6 @@ namespace IntegratedSystemBigBrother
             SetMarginActorProperty(outsiderBackwardMovingAnimation);
 
             SetDesiredFrameRateForStoryboard(outsiderStoryboard);
-            MakeActorDisappearFromScreen(outsider, screen, outsiderStoryboard);
 
             return outsiderStoryboard;
         }

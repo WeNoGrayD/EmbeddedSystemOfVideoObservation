@@ -47,8 +47,7 @@ namespace IntegratedSystemBigBrother
 
         public override Storyboard BuildEmployeeArrivalAnimation(
             Path employee,
-            TimeSpan duration,
-            Panel screen)
+            TimeSpan duration)
         {
             Thickness movingFrom = new Thickness(4, 3.3, 0, 0),
                       movingTo = new Thickness(6, 2, 0, 0);
@@ -67,7 +66,10 @@ namespace IntegratedSystemBigBrother
             DoubleAnimation employeeForwardStrokeThicknessAnimation =
                 new DoubleAnimation(strokeThicknessFrom, strokeThicknessTo, duration) { FillBehavior = FillBehavior.HoldEnd };
 
-            Storyboard employeeStoryboard = new Storyboard();
+            Storyboard employeeStoryboard = new Storyboard()
+            {
+                RepeatBehavior = RepeatBehavior.Forever
+            };
             employeeStoryboard.Children.Add(employeeForwardMovingAnimation);
             employeeStoryboard.Children.Add(employeeForwardScalingXAnimation);
             employeeStoryboard.Children.Add(employeeForwardScalingYAnimation);
@@ -79,15 +81,13 @@ namespace IntegratedSystemBigBrother
             SetStrokeThicknessActorProperty(employeeForwardStrokeThicknessAnimation);
 
             SetDesiredFrameRateForStoryboard(employeeStoryboard);
-            MakeActorDisappearFromScreen(employee, screen, employeeStoryboard);
 
             return employeeStoryboard;
         }
 
         public override Storyboard BuildEmployeeDepartureAnimation(
             Path employee,
-            TimeSpan duration,
-            Panel screen)
+            TimeSpan duration)
         {
             Thickness movingFrom = new Thickness(6, 2, 0, 0),
                       movingTo = new Thickness(4, 3.3, 0, 0);
@@ -106,7 +106,10 @@ namespace IntegratedSystemBigBrother
             DoubleAnimation employeeBackwardStrokeThicknessAnimation =
                 new DoubleAnimation(strokeThicknessFrom, strokeThicknessTo, duration) { FillBehavior = FillBehavior.HoldEnd };
 
-            Storyboard employeeStoryboard = new Storyboard();
+            Storyboard employeeStoryboard = new Storyboard()
+            {
+                RepeatBehavior = RepeatBehavior.Forever
+            };
             employeeStoryboard.Children.Add(employeeBackwardMovingAnimation);
             employeeStoryboard.Children.Add(employeeBackwardScalingXAnimation);
             employeeStoryboard.Children.Add(employeeBackwardScalingYAnimation);
@@ -118,15 +121,13 @@ namespace IntegratedSystemBigBrother
             SetStrokeThicknessActorProperty(employeeBackwardStrokeThicknessAnimation);
 
             SetDesiredFrameRateForStoryboard(employeeStoryboard);
-            MakeActorDisappearFromScreen(employee, screen, employeeStoryboard);
 
             return employeeStoryboard;
         }
 
         public override Storyboard BuildOutsiderOnObjectAnimation(
             Path outsider,
-            TimeSpan duration,
-            Panel screen)
+            TimeSpan duration)
         {
             TimeSpan backwardAnimationDelay = TimeSpan.FromSeconds(2);
 
@@ -171,7 +172,11 @@ namespace IntegratedSystemBigBrother
                     BeginTime = duration + backwardAnimationDelay
                 };
 
-            Storyboard outsiderStoryboard = new Storyboard() { Duration = duration + duration + backwardAnimationDelay };
+            Storyboard outsiderStoryboard = new Storyboard()
+            {
+                Duration = duration + duration + backwardAnimationDelay,
+                RepeatBehavior = RepeatBehavior.Forever
+            };
             outsiderStoryboard.Children.Add(outsiderForwardMovingAnimation);
             outsiderStoryboard.Children.Add(outsiderForwardScalingXAnimation);
             outsiderStoryboard.Children.Add(outsiderForwardScalingYAnimation);
@@ -191,7 +196,6 @@ namespace IntegratedSystemBigBrother
             SetStrokeThicknessActorProperty(outsiderBackwardStrokeThicknessAnimation);
 
             SetDesiredFrameRateForStoryboard(outsiderStoryboard);
-            MakeActorDisappearFromScreen(outsider, screen, outsiderStoryboard);
 
             return outsiderStoryboard;
         }
