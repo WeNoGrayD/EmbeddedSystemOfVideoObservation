@@ -38,7 +38,7 @@ namespace IntegratedSystemBigBrother
 
         public Path Corridor { get; protected set; }
 
-        public Path Actor { get; protected set; }
+        public Path Actor { get; set; }
 
         public Storyboard Animation { get; protected set; }
 
@@ -47,7 +47,7 @@ namespace IntegratedSystemBigBrother
             DrawCorridor();
             SendPackage = () => new CameraStandardSituationDataPackage(DateTime.Now, IsFirstPackageInSeries);
             _behaviorSchedule = new List<Func<Task>>();
-             Task.Run((Action)ScheduleLoop);
+            Task.Run((Action)ScheduleLoop);
         }
 
         public Camera(List<Func<Task>> behaviorSchedule) : this()
@@ -55,7 +55,7 @@ namespace IntegratedSystemBigBrother
             _behaviorSchedule = behaviorSchedule;
         }
 
-        public async void ScheduleLoop()
+        public void ScheduleLoop()
         {
             while(true)
             {
@@ -63,7 +63,7 @@ namespace IntegratedSystemBigBrother
                 {
                     Animation?.Stop();
                     IsFirstPackageInSeries = true;
-                    await behavior();
+                    behavior().Wait();
                 }
             }
         }
