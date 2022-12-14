@@ -38,7 +38,7 @@ namespace IntegratedSystemBigBrother
 
         public Path Corridor { get; protected set; }
 
-        public Path Actor { get; protected set; }
+        public Path Actor { get; set; }
 
         public Storyboard Animation { get; protected set; }
 

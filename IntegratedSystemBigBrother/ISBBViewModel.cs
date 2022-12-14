@@ -42,8 +42,8 @@ namespace IntegratedSystemBigBrother
             Camera cam1 = new CameraWatchingFromLeftCornerWall();
             cam1.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(7), "Иван Петрович");
             MainProc.Network.Add("Камера 1", new PeripheralProcessor(cam1, "Камера 1"));
-            MainProc.Network.Add("Камера 2", new PeripheralProcessor(new CameraWatchingFromWallCentre(), "Камера 2"));
-            MainProc.Network.Add("Камера 3", new PeripheralProcessor(new CameraWatchingFromRightCornerWall(), "Камера 3"));
+            //MainProc.Network.Add("Камера 2", new PeripheralProcessor(new CameraWatchingFromWallCentre(), "Камера 2"));
+            //MainProc.Network.Add("Камера 3", new PeripheralProcessor(new CameraWatchingFromRightCornerWall(), "Камера 3"));
 
             MainProc.CameraSelected += ShowCameraScreen;
             MainProc.BigBrotherClosedEye += TurnOffScreen;
@@ -75,6 +75,7 @@ namespace IntegratedSystemBigBrother
         private static void TurnOffScreen()
         {
             DisposeListener();
+            View.Screen.Dispatch(() => ClearChildrenFromScreen());
             View.Screen.Dispatch(() => SetScreenBackground(Brushes.Black));
         }
 
@@ -99,7 +100,7 @@ namespace IntegratedSystemBigBrother
             return View.Screen.Children.Contains(obj);
         }
 
-        private static void AddChildOnScreen(Path obj)
+        private static void AddChildOnScreen(Path obj, string name)
         {
             View.Screen.Children.Add(obj);
         }
@@ -116,7 +117,7 @@ namespace IntegratedSystemBigBrother
 
         private static void ShowCorridor()
         {
-            View.Screen.Dispatch(() => AddChildOnScreen(_currentCamera.Corridor));
+            View.Screen.Dispatch(() => AddChildOnScreen(_currentCamera.Corridor, "corr"));
         }
 
         public static void ShowEmployee()
@@ -124,7 +125,8 @@ namespace IntegratedSystemBigBrother
             if (!(bool)View.Screen.Dispatch(() => ScreenContainsObject(_currentCamera.Actor)))
             {
                 Path employee = (Path)View.Resources["EmployeePath"];
-                View.Screen.Dispatch(() => AddChildOnScreen(employee));
+                _currentCamera.Actor = employee;
+                View.Screen.Dispatch(() => AddChildOnScreen(employee, "emp"));
                 DispatchAnimation(
                         _currentCamera.Animation, 
                         () => _currentCamera.Animation.Completed += (sender, e) =>
@@ -137,7 +139,7 @@ namespace IntegratedSystemBigBrother
             if (!(bool)View.Screen.Dispatch(() => ScreenContainsObject(_currentCamera.Actor)))
             {
                 Path outsider = (Path)View.Resources["OutsiderPath"];
-                View.Screen.Dispatch(() => AddChildOnScreen(outsider));
+                View.Screen.Dispatch(() => AddChildOnScreen(outsider, "out"));
                 _currentCamera.Animation.Completed += (sender, e) =>
                 { View.Screen.Dispatch(() => RemoveChildFromScreen(outsider)); };
             }
