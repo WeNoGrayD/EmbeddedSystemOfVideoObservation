@@ -75,6 +75,7 @@ namespace IntegratedSystemBigBrother
         private static void TurnOffScreen()
         {
             DisposeListener();
+            View.Screen.Dispatch(() => ClearChildrenFromScreen());
             View.Screen.Dispatch(() => SetScreenBackground(Brushes.Black));
         }
 
@@ -99,7 +100,7 @@ namespace IntegratedSystemBigBrother
             return View.Screen.Children.Contains(obj);
         }
 
-        private static void AddChildOnScreen(Path obj)
+        private static void AddChildOnScreen(Path obj, string name)
         {
             View.Screen.Children.Add(obj);
         }
@@ -116,7 +117,7 @@ namespace IntegratedSystemBigBrother
 
         private static void ShowCorridor()
         {
-            View.Screen.Dispatch(() => AddChildOnScreen(_currentCamera.Corridor));
+            View.Screen.Dispatch(() => AddChildOnScreen(_currentCamera.Corridor, "corr"));
         }
 
         public static void ShowEmployee()
@@ -125,7 +126,7 @@ namespace IntegratedSystemBigBrother
             {
                 Path employee = (Path)View.Resources["EmployeePath"];
                 _currentCamera.Actor = employee;
-                View.Screen.Dispatch(() => AddChildOnScreen(employee));
+                View.Screen.Dispatch(() => AddChildOnScreen(employee, "emp"));
                 DispatchAnimation(
                         _currentCamera.Animation, 
                         () => _currentCamera.Animation.Completed += (sender, e) =>
@@ -138,8 +139,7 @@ namespace IntegratedSystemBigBrother
             if (!(bool)View.Screen.Dispatch(() => ScreenContainsObject(_currentCamera.Actor)))
             {
                 Path outsider = (Path)View.Resources["OutsiderPath"];
-                _currentCamera.Actor = outsider;
-                View.Screen.Dispatch(() => AddChildOnScreen(outsider));
+                View.Screen.Dispatch(() => AddChildOnScreen(outsider, "out"));
                 _currentCamera.Animation.Completed += (sender, e) =>
                 { View.Screen.Dispatch(() => RemoveChildFromScreen(outsider)); };
             }
