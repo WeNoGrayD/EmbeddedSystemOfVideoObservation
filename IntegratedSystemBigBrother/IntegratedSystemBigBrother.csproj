@@ -69,6 +69,7 @@
     <Compile Include="CameraHelper.cs" />
     <Compile Include="CameraListener.cs" />
     <Compile Include="CameraMessageImportanceEnumToImageConverter.cs" />
+    <Compile Include="CameraScheduler.cs" />
     <Compile Include="CameraWatchingFromLeftCornerWall.cs" />
     <Compile Include="CameraWatchingFromRightCornerWall.cs" />
     <Compile Include="CameraWatchingFromWallCentre.cs" />
