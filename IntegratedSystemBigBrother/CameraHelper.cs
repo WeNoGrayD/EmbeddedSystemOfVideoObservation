@@ -119,7 +119,7 @@ namespace IntegratedSystemBigBrother
             Animation.RepeatBehavior = RepeatBehavior.Forever;
             //Actor.BeginStoryboard(Animation);
             //await Task.Delay(duration).ConfigureAwait(false);
-            Animation.Stop();
+            //Animation.Stop();
             return;
         }
 
@@ -131,10 +131,10 @@ namespace IntegratedSystemBigBrother
             SendPackage = () => new CameraEmployeeDepartureDataPackage(DateTime.Now, IsFirstPackageInSeries, employeeName);
             Actor = DrawEmployee();
             Animation = BuildEmployeeDepartureAnimation(Actor, TimeSpan.FromSeconds(10));
-            Animation.RepeatBehavior = RepeatBehavior.Forever;
+            //Animation.RepeatBehavior = RepeatBehavior.Forever;
             //Actor.BeginStoryboard(Animation);
             //await Task.Delay(duration).ConfigureAwait(false);
-            Animation.Stop();
+            //Animation.Stop();
             return;
         }
 
@@ -148,7 +148,7 @@ namespace IntegratedSystemBigBrother
             Animation.RepeatBehavior = RepeatBehavior.Forever;
             //Actor.BeginStoryboard(Animation);
             //await Task.Delay(duration).ConfigureAwait(false);
-            Animation.Stop();
+            //Animation.Stop();
             return;
         }
     }

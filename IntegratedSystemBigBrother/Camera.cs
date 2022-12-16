@@ -71,6 +71,16 @@ namespace IntegratedSystemBigBrother
             }
         }
 
+        public void StartObserve()
+        {
+            Actor.Dispatch(() => Actor.BeginStoryboard(Animation));
+        }
+
+        public void StopObserve()
+        {
+            Animation.Dispatch((Action)Animation.Stop);
+        }
+
         protected void AddBehaviorToSchedule(Func<Task> behavior, TimeSpan duration)
         {
             _behaviorSchedule.Add(behavior);

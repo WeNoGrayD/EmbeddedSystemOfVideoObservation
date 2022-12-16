@@ -27,7 +27,19 @@ namespace IntegratedSystemBigBrother
             }
         }
 
-        public bool IsInObservingMode { get; private set; }
+        private bool _isInObservingMode;
+        public bool IsInObservingMode
+        {
+            get { return _isInObservingMode; }
+            private set
+            {
+                if (value != _isInObservingMode)
+                {
+                    _isInObservingMode = value;
+                    OnPropertyChanged(nameof(IsInObservingMode));
+                }
+            }
+        }
 
         private ObservableCollection<CameraDataPackage> _eventLog;
         public ObservableCollection<CameraDataPackage> EventLog
@@ -52,7 +64,7 @@ namespace IntegratedSystemBigBrother
             Network.Add(NONSELECTED_CAMERA_STR, null);
             EventLog = new ObservableCollection<CameraDataPackage>();
 
-            CameraSelected += (cam) => IsInObservingMode = true;
+            CameraSelected += (cam) => { IsInObservingMode = true; };
         }
 
         public async Task SurveyNetwork()
@@ -62,7 +74,7 @@ namespace IntegratedSystemBigBrother
             while (true)
             {
                 SurveyUser();
-                foreach (PeripheralProcessor pProc in Network.Values.Where(pp => pp != null))
+                foreach (PeripheralProcessor pProc in Network.Values.Where(ppu => ppu != null))
                     SurveyPeripheral(pProc);
             }
 
@@ -101,6 +113,8 @@ namespace IntegratedSystemBigBrother
 
         public void Visit(CameraEmployeeDepartureDataPackage package)
         {
+            if (EventLog.Count > 10)
+                return;
             if (package.IsFirstInSeries)
             {
                 EventLog.Add(package);
@@ -109,6 +123,8 @@ namespace IntegratedSystemBigBrother
 
         public void Visit(CameraOutsiderOnObjectDataPackage package)
         {
+            if (EventLog.Count > 10)
+                return;
             if (package.IsFirstInSeries)
             {
                 EventLog.Add(package);

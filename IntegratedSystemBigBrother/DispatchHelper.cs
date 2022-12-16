@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -19,13 +20,13 @@ namespace IntegratedSystemBigBrother
     public static class DispatchHelper
     {
         public static void Dispatch<T>(this T dispatchedElement, Action action)
-            where T : UIElement
+            where T : DispatcherObject
         {
             dispatchedElement.Dispatcher.Invoke(action);
         }
 
         public static object Dispatch<T>(this T dispatchedElement, Func<object> func)
-            where T : UIElement
+            where T : DispatcherObject
         {
             return dispatchedElement.Dispatcher.Invoke(func);
         }

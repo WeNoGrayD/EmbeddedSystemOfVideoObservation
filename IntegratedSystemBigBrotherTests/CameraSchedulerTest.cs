@@ -99,7 +99,7 @@ namespace IntegratedSystemBigBrotherTests
 
             using (CancellationTokenSource tokenSource = new CancellationTokenSource())
             {
-                tokenSource.CancelAfter(TimeSpan.FromSeconds(1));
+                tokenSource.CancelAfter(TimeSpan.FromSeconds(600));
                 await Task.Run(() => scheduler.RunScheduleAsync(tokenSource.Token));
             }
             logger.Dispose();

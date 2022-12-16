@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -31,7 +32,9 @@ namespace IntegratedSystemBigBrother
 
         public static readonly CentralProcessor MainProc;
 
-        private static Camera _currentCamera;
+        public static readonly CameraScheduler Scheduler;
+
+        //private static Camera _currentCamera;
 
         private static CameraListener _currentListener;
 
@@ -39,16 +42,37 @@ namespace IntegratedSystemBigBrother
         {
             MainProc = new CentralProcessor();
 
-            Camera cam1 = new CameraWatchingFromLeftCornerWall();
-            cam1.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(7), "Иван Петрович");
+            CameraScheduler Scheduler = new CameraScheduler(MainProc);
+
+            Camera cam1 = new CameraWatchingFromLeftCornerWall(),
+                   cam2 = new CameraWatchingFromWallCentre(),
+                   cam3 = new CameraWatchingFromRightCornerWall();
+
             MainProc.Network.Add("Камера 1", new PeripheralProcessor(cam1, "Камера 1"));
-            //MainProc.Network.Add("Камера 2", new PeripheralProcessor(new CameraWatchingFromWallCentre(), "Камера 2"));
-            //MainProc.Network.Add("Камера 3", new PeripheralProcessor(new CameraWatchingFromRightCornerWall(), "Камера 3"));
+            MainProc.Network.Add("Камера 2", new PeripheralProcessor(cam2, "Камера 2"));
+            MainProc.Network.Add("Камера 3", new PeripheralProcessor(cam3, "Камера 3"));
+
+            cam1.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(3), "Иван Петрович");
+            cam1.AddEmployeeDepartureToSchedule(TimeSpan.FromSeconds(5), "Семён Семёныч");
+            cam1.AddOutsiderOnObjectToSchedule(TimeSpan.FromSeconds(4));
+
+            cam2.AddEmployeeDepartureToSchedule(TimeSpan.FromSeconds(4), "Олег Егорыч");
+            cam2.AddStandardSituationToSchedule(TimeSpan.FromSeconds(3));
+            cam2.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(3), "Вадим Вадимыч");
+
+            cam3.AddStandardSituationToSchedule(TimeSpan.FromSeconds(4));
+            cam3.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(4), "Потап Ефимыч");
+            cam3.AddOutsiderOnObjectToSchedule(TimeSpan.FromSeconds(6));
 
             MainProc.CameraSelected += ShowCameraScreen;
             MainProc.BigBrotherClosedEye += TurnOffScreen;
 
             Task.Run(MainProc.SurveyNetwork);
+            using (CancellationTokenSource tokenSource = new CancellationTokenSource())
+            {
+                tokenSource.CancelAfter(TimeSpan.FromMinutes(10));
+                Task.Run(() => Scheduler.RunScheduleAsync(tokenSource.Token));
+            }
         }
 
         private static void OnViewSet()
@@ -69,12 +93,12 @@ namespace IntegratedSystemBigBrother
         private static void DisposeListener()
         {
             _currentListener?.Dispose();
-            _currentListener = null;
         }
 
         private static void TurnOffScreen()
         {
             DisposeListener();
+            //_currentListener = new CameraBackgroundListener(MainProc);
             View.Screen.Dispatch(() => ClearChildrenFromScreen());
             View.Screen.Dispatch(() => SetScreenBackground(Brushes.Black));
         }
@@ -84,10 +108,9 @@ namespace IntegratedSystemBigBrother
             DisposeListener();
             View.Screen.Dispatch(() => ClearChildrenFromScreen());
             View.Screen.Dispatch(() => SetScreenBackground(Brushes.Transparent));
-            _currentCamera = selectedCamera;
-            ShowCorridor();
-            _currentListener = new CameraListener(selectedCamera);
-            Task.Run((Action)_currentListener.ListenCamera);
+            //_currentCamera = selectedCamera;
+            _currentListener = new CameraOnScreenListener(selectedCamera);
+            Task.Run((Action)_currentListener.Listen);
         }
 
         private static void SetScreenBackground(Brush brush)
@@ -115,34 +138,45 @@ namespace IntegratedSystemBigBrother
             View.Screen.Children.Clear();
         }
 
-        private static void ShowCorridor()
+        public static void ShowCorridor(Camera selectedCamera)
         {
-            View.Screen.Dispatch(() => AddChildOnScreen(_currentCamera.Corridor, "corr"));
+            View.Screen.Dispatch(() => AddChildOnScreen(selectedCamera.Corridor, "corr"));
         }
 
-        public static void ShowEmployee()
+        public static void ShowEmployee(Camera selectedCamera)
         {
-            if (!(bool)View.Screen.Dispatch(() => ScreenContainsObject(_currentCamera.Actor)))
+            if (!(bool)View.Screen.Dispatch(() => ScreenContainsObject(selectedCamera.Actor)))
             {
                 Path employee = (Path)View.Resources["EmployeePath"];
-                _currentCamera.Actor = employee;
+                selectedCamera.Actor = employee;
                 View.Screen.Dispatch(() => AddChildOnScreen(employee, "emp"));
                 DispatchAnimation(
-                        _currentCamera.Animation, 
-                        () => _currentCamera.Animation.Completed += (sender, e) =>
+                        selectedCamera.Animation, 
+                        () => selectedCamera.Animation.Completed += (sender, e) =>
                             { View.Screen.Dispatch(() => RemoveChildFromScreen(employee)); });
             }
+            Scheduler.CameraBehaviorStart += StartObserve;
         }
 
-        public static void ShowOutsider()
+        public static void ShowOutsider(Camera selectedCamera)
         {
-            if (!(bool)View.Screen.Dispatch(() => ScreenContainsObject(_currentCamera.Actor)))
+            if (!(bool)View.Screen.Dispatch(() => ScreenContainsObject(selectedCamera.Actor)))
             {
                 Path outsider = (Path)View.Resources["OutsiderPath"];
                 View.Screen.Dispatch(() => AddChildOnScreen(outsider, "out"));
-                _currentCamera.Animation.Completed += (sender, e) =>
+                selectedCamera.Animation.Completed += (sender, e) =>
                 { View.Screen.Dispatch(() => RemoveChildFromScreen(outsider)); };
             }
+        }
+
+        private static async Task StartObserve(PeripheralProcessor ppu, CameraBehaviorRecord behaviorRecord)
+        {
+            ppu.AgregatedCamera.StartObserve();
+        }
+
+        private static async Task StopObserve(PeripheralProcessor ppu, CameraBehaviorRecord behaviorRecord)
+        {
+            ppu.AgregatedCamera.StopObserve();
         }
 
         public static void DispatchActor(Path actor, Action action)

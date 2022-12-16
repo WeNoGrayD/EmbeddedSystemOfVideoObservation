@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace IntegratedSystemBigBrother
 {
-    public class CameraListener : ICameraDataPackageVisitor, IDisposable
+    public abstract class CameraListener : ICameraDataPackageVisitor, IDisposable
     {
-        private static Camera _listenedCamera;
+        protected Camera _listenedCamera;
 
-        private static bool _stopListenCamera;
+        protected static bool _stopListenCamera;
 
         public CameraListener(Camera listenedCamera)
         {
@@ -18,13 +20,18 @@ namespace IntegratedSystemBigBrother
             _listenedCamera = listenedCamera;
         }
 
-        public void ListenCamera()
+        public void Listen()
         {
             while (!_stopListenCamera)
             {
-                _listenedCamera.SendPackage().Accept(this); // Делается в обход периферийного процессора.
-                Task.Delay(TimeSpan.FromSeconds(1));
+                OnListenCamera();
             }
+        }
+
+        protected virtual void OnListenCamera()
+        {
+            _listenedCamera.SendPackage().Accept(this); // Делается в обход периферийного процессора.
+            Task.Delay(TimeSpan.FromSeconds(1));
         }
 
         public void Dispose()
@@ -32,24 +39,80 @@ namespace IntegratedSystemBigBrother
             _stopListenCamera = true;
         }
 
-        public void Visit(CameraStandardSituationDataPackage package)
+        public virtual void Visit(CameraStandardSituationDataPackage package)
         {
-            ;
+            ISBBViewModel.ShowCorridor(_listenedCamera);
         }
 
-        public void Visit(CameraEmployeeArrivalDataPackage package)
+        public virtual void Visit(CameraEmployeeArrivalDataPackage package)
         {
-            ISBBViewModel.ShowEmployee();
+            ISBBViewModel.ShowCorridor(_listenedCamera);
+            ISBBViewModel.ShowEmployee(_listenedCamera);
         }
 
-        public void Visit(CameraEmployeeDepartureDataPackage package)
+        public virtual void Visit(CameraEmployeeDepartureDataPackage package)
         {
-            ISBBViewModel.ShowEmployee();
+            ISBBViewModel.ShowCorridor(_listenedCamera);
+            ISBBViewModel.ShowEmployee(_listenedCamera);
         }
 
-        public void Visit(CameraOutsiderOnObjectDataPackage package)
+        public virtual void Visit(CameraOutsiderOnObjectDataPackage package)
         {
-            ISBBViewModel.ShowOutsider();
+            ISBBViewModel.ShowCorridor(_listenedCamera);
+            ISBBViewModel.ShowOutsider(_listenedCamera);
         }
+    }
+
+    public class CameraOnScreenListener : CameraListener
+    {
+        public CameraOnScreenListener(Camera listenedCamera) 
+            : base(listenedCamera)
+        { }
+    }
+
+    public class CameraBackgroundListener : CameraListener
+    {
+        private ReadOnlyCollection<Camera> _network;
+
+        public CameraBackgroundListener(CentralProcessor cpu)
+            : base(null)
+        {
+            cpu.PropertyChanged += OnNotObservingMode;
+            _network = new ReadOnlyCollection<Camera>(cpu.Network.Values.Select(ppu => ppu.AgregatedCamera).ToList());
+        }
+
+        public void OnNotObservingMode(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(CentralProcessor.IsInObservingMode))
+            {
+                if (!((CentralProcessor)sender).IsInObservingMode)
+                {
+                    _stopListenCamera = false;
+                    Task.Run((Action)Listen);
+                }
+                else
+                {
+                    _stopListenCamera = true;
+                }
+            }
+        }
+
+        protected override void OnListenCamera()
+        {
+            foreach (Camera camera in _network)
+            {
+                _listenedCamera = camera;
+                base.OnListenCamera();
+            }
+        }
+
+        public override void Visit(CameraStandardSituationDataPackage package)
+        { ; }
+
+        public override void Visit(CameraEmployeeArrivalDataPackage package)
+        { ; }
+
+        public override void Visit(CameraEmployeeDepartureDataPackage package)
+        { ; }
     }
 }
