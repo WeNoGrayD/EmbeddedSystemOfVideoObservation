@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +19,8 @@ namespace IntegratedSystemBigBrother
             params object[] additionParams);
 
         private List<Func<Task>> _behaviorSchedule;
-        
+        public readonly ObservableCollection<CameraBehaviorRecord> BehaviorSchedule;
+
         public Func<CameraDataPackage> SendPackage;
 
         private bool _isFirstPackageInSeries;
@@ -47,7 +49,8 @@ namespace IntegratedSystemBigBrother
             DrawCorridor();
             SendPackage = () => new CameraStandardSituationDataPackage(DateTime.Now, IsFirstPackageInSeries);
             _behaviorSchedule = new List<Func<Task>>();
-            Task.Run((Action)ScheduleLoop);
+            BehaviorSchedule = new ObservableCollection<CameraBehaviorRecord>();
+            //Task.Run((Action)ScheduleLoop);
         }
 
         public Camera(List<Func<Task>> behaviorSchedule) : this()
@@ -68,36 +71,47 @@ namespace IntegratedSystemBigBrother
             }
         }
 
+        protected void AddBehaviorToSchedule(Func<Task> behavior, TimeSpan duration)
+        {
+            _behaviorSchedule.Add(behavior);
+            CameraBehaviorRecord behaviorRecord = new CameraBehaviorRecord(behavior, duration);
+            BehaviorSchedule.Add(behaviorRecord);
+        }
+
         public void AddStandardSituationToSchedule(TimeSpan duration)
         {
-            _behaviorSchedule.Add(async () =>
+            Func<Task> behavior = async () =>
             {
                 await SetSendStandardSituationDataPackageBehavior(duration);
-            });
+            };
+            AddBehaviorToSchedule(behavior, duration);
         }
 
         public void AddEmployeeArrivalToSchedule(TimeSpan duration, string employeeName)
         {
-            _behaviorSchedule.Add(async () =>
+            Func<Task> behavior = async () =>
             {
                 await SetSendEmployeeArrivalDataPackageBehavior(duration, employeeName);
-            });
+            };
+            AddBehaviorToSchedule(behavior, duration);
         }
 
         public void AddEmployeeDepartureToSchedule(TimeSpan duration, string employeeName)
         {
-            _behaviorSchedule.Add(async () =>
+            Func<Task> behavior = async () =>
             {
                 await SetSendEmployeeDepartureDataPackageBehavior(duration, employeeName);
-            });
+            };
+            AddBehaviorToSchedule(behavior, duration);
         }
 
         public void AddOutsiderOnObjectToSchedule(TimeSpan duration)
         {
-            _behaviorSchedule.Add(async () =>
+            Func<Task> behavior = async () =>
             {
                 await SetSendOutsiderOnObjectDataPackageBehavior(duration);
-            });
+            };
+            AddBehaviorToSchedule(behavior, duration);
         }
     }
 }

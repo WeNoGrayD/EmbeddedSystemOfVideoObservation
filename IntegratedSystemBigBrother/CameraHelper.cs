@@ -105,7 +105,7 @@ namespace IntegratedSystemBigBrother
             params object[] additionParams)
         {
             SendPackage = () => new CameraStandardSituationDataPackage(DateTime.Now, IsFirstPackageInSeries);
-            await Task.Delay(duration).ConfigureAwait(false);
+            //await Task.Delay(duration).ConfigureAwait(false);
             return;
         }
 
@@ -118,7 +118,7 @@ namespace IntegratedSystemBigBrother
             Animation = BuildEmployeeArrivalAnimation(Actor, TimeSpan.FromSeconds(10));
             Animation.RepeatBehavior = RepeatBehavior.Forever;
             //Actor.BeginStoryboard(Animation);
-            await Task.Delay(duration).ConfigureAwait(false);
+            //await Task.Delay(duration).ConfigureAwait(false);
             Animation.Stop();
             return;
         }
@@ -132,8 +132,8 @@ namespace IntegratedSystemBigBrother
             Actor = DrawEmployee();
             Animation = BuildEmployeeDepartureAnimation(Actor, TimeSpan.FromSeconds(10));
             Animation.RepeatBehavior = RepeatBehavior.Forever;
-            Actor.BeginStoryboard(Animation);
-            await Task.Delay(duration).ConfigureAwait(false);
+            //Actor.BeginStoryboard(Animation);
+            //await Task.Delay(duration).ConfigureAwait(false);
             Animation.Stop();
             return;
         }
@@ -146,8 +146,8 @@ namespace IntegratedSystemBigBrother
             Actor = DrawEmployee();
             Animation = BuildOutsiderOnObjectAnimation(Actor, TimeSpan.FromSeconds(10));
             Animation.RepeatBehavior = RepeatBehavior.Forever;
-            Actor.BeginStoryboard(Animation);
-            await Task.Delay(duration).ConfigureAwait(false);
+            //Actor.BeginStoryboard(Animation);
+            //await Task.Delay(duration).ConfigureAwait(false);
             Animation.Stop();
             return;
         }

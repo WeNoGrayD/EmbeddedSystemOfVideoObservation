@@ -52,6 +52,7 @@
     <Compile Include="ObservableJaggedarrayTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CameraTest.cs" />
+    <Compile Include="CameraSchedulerTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

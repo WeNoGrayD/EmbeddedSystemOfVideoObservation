@@ -74,6 +74,7 @@
     <Compile Include="CameraWatchingFromRightCornerWall.cs" />
     <Compile Include="CameraWatchingFromWallCentre.cs" />
     <Compile Include="CentralProcessor.cs" />
+    <Compile Include="DictionaryCastingHelper.cs" />
     <Compile Include="DispatchHelper.cs" />
     <Compile Include="ISBBView.xaml.cs">
       <DependentUpon>ISBBView.xaml</DependentUpon>

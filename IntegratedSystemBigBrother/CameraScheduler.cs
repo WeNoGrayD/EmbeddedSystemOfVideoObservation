@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections;
 using System.Collections.Specialized;
@@ -10,68 +11,123 @@ namespace IntegratedSystemBigBrother
 {
     public class CameraScheduler
     {
+        private CentralProcessor _cpu;
+
         private Dictionary<string, LinkedList<CameraBehaviorRecord>> _schedule;
+
+        public event Func<PeripheralProcessor, CameraBehaviorRecord, Task> CameraBehaviorStart;
+
+        public event Func<PeripheralProcessor, CameraBehaviorRecord, Task> CameraBehaviorEnd;
 
         public CameraScheduler(CentralProcessor cpu)
         {
-            cpu.Network.CollectionChanged += AddCameraToSchedule;
+            _cpu = cpu;
+            _schedule = new Dictionary<string, LinkedList<CameraBehaviorRecord>>();
+            _cpu.Network.CollectionChanged += AddCameraToSchedule;
+            CameraBehaviorStart += async (_1, _2) => { await _2.Behavior(); };
         }
 
-        private async Task RunSchedule()
+        private void AddCameraToSchedule(object sender, NotifyCollectionChangedEventArgs e)
         {
-            (string CameraName, CameraBehaviorRecord BehaviorRecord) closiest;
+            if (e.Action != NotifyCollectionChangedAction.Add)
+                return;
+
+            Dictionary<string, PeripheralProcessor> newCameras = 
+                e.NewItems.Cast<KeyValueTuple<string, PeripheralProcessor>>()
+                          .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            foreach (string cameraName in newCameras.Keys)
+            {
+                _schedule.Add(cameraName, new LinkedList<CameraBehaviorRecord>());
+                SubscribeOnCameraBehaviorUpdating(cameraName, newCameras[cameraName]);
+            }
+        }
+
+        private void SubscribeOnCameraBehaviorUpdating(string cameraName, PeripheralProcessor ppu)
+        {
+            ppu.AgregatedCamera.BehaviorSchedule.CollectionChanged +=
+                (ccsender, cce) =>
+                {
+                    if (cce.Action == NotifyCollectionChangedAction.Add)
+                    {
+                        foreach (CameraBehaviorRecord newBehaviorRecord in cce.NewItems)
+                            AddBehaviorToCameraSchedule(cameraName, newBehaviorRecord);
+                    }
+                };
+        }
+
+        public void AddBehaviorToCameraSchedule(
+            PeripheralProcessor ppu,
+            CameraBehaviorRecord newBehavior)
+        {
+            AddBehaviorToCameraSchedule(ppu, newBehavior);
+        }
+
+        public void AddBehaviorToCameraSchedule(string cameraName, CameraBehaviorRecord newBehavior)
+        {
+            _schedule[cameraName].AddLast(newBehavior);
+        }
+
+        public async Task RunScheduleAsync(CancellationToken token)
+        {
+            TimeSpan wastedTime;
 
             ClearEmptyCameraSchedules();
             while (true)
             {
+                if (token.IsCancellationRequested) return;
                 RunUrgentBehaviors();
-                closiest = SelectClosiestBehavior();
-                await WaitFor(closiest.BehaviorRecord);
-                ShiftSchedule(closiest);
+                wastedTime = RetrieveClosiestBehaviorTimeToStart();
+                await WaitFor(wastedTime);
+                ShiftSchedule(wastedTime);
             }
+
+            return;
         }
 
         private void ClearEmptyCameraSchedules()
         {
-            _schedule = _schedule.Where(record => record.Value.Count > 0)
-                .ToDictionary(record => record.Key, record => record.Value);
+            Dictionary<string, LinkedList<CameraBehaviorRecord>> nonEmptyCameraSchedules = 
+                _schedule.Where(record => record.Value.Count > 0)
+                         .ToDictionary();
+            _schedule.Clear();
+            _schedule = nonEmptyCameraSchedules;
         }
 
         private void RunUrgentBehaviors()
         {
+            LinkedList<CameraBehaviorRecord> cameraSchedule;
             CameraBehaviorRecord behaviorRecord;
-            foreach (LinkedList<CameraBehaviorRecord> cameraSchedule in _schedule.Values)
+            foreach (string cameraName in _schedule.Keys)
             {
+                cameraSchedule = _schedule[cameraName];
                 behaviorRecord = cameraSchedule.First();
                 if (!behaviorRecord.IsRunning)
                 {
                     cameraSchedule.RemoveFirst();
                     behaviorRecord = behaviorRecord.Run();
                     cameraSchedule.AddFirst(behaviorRecord);
+                    CameraBehaviorStart?.Invoke(_cpu.Network[cameraName], behaviorRecord);
                 }
             }
         }
 
-        private (string CameraName, CameraBehaviorRecord BehaviorRecord) SelectClosiestBehavior()
+        private TimeSpan RetrieveClosiestBehaviorTimeToStart()
         {
             Dictionary<string, CameraBehaviorRecord> nextBehaviors =
                 _schedule.Keys.ToDictionary(cameraName => cameraName, cameraName => _schedule[cameraName].First());
             double closiestTimeToEnd = nextBehaviors.Min(record => record.Value.TimeToEnd.TotalMilliseconds);
-            KeyValuePair<string, CameraBehaviorRecord> closiest = 
-                nextBehaviors.First(record => record.Value.TimeToEnd.TotalMilliseconds == closiestTimeToEnd);
-            return (closiest.Key, closiest.Value);
+            return TimeSpan.FromMilliseconds(closiestTimeToEnd);
         }
 
-        private async Task WaitFor(CameraBehaviorRecord behaviorRecord)
+        private async Task WaitFor(TimeSpan wastedTime)
         {
-            await Task.Delay(behaviorRecord.TimeToEnd);
+            await Task.Delay(wastedTime);
         }
 
-        private void ShiftSchedule((string CameraName, CameraBehaviorRecord BehaviorRecord) closiest)
+        private void ShiftSchedule(TimeSpan wastedTime)
         {
-            TimeSpan wastedTime = closiest.BehaviorRecord.TimeToEnd;
             CameraBehaviorRecord behaviorRecord;
-            foreach (string cameraName in _schedule.Keys.Except(new[] { closiest.CameraName }))
+            foreach (string cameraName in _schedule.Keys)
             {
                 behaviorRecord = _schedule[cameraName].First();
                 if (behaviorRecord.TimeToEnd - wastedTime == TimeSpan.Zero)
@@ -79,8 +135,6 @@ namespace IntegratedSystemBigBrother
                 else
                     ShiftBehaviorRecordWithNonZeroTimeToEnd(cameraName);
             }
-            behaviorRecord = _schedule[closiest.CameraName].First();
-            ShiftBehaviorRecordWithZeroTimeToEnd(closiest.CameraName);
 
             return;
 
@@ -93,34 +147,11 @@ namespace IntegratedSystemBigBrother
 
             void ShiftBehaviorRecordWithZeroTimeToEnd(string cameraName)
             {
+                CameraBehaviorEnd?.Invoke(_cpu.Network[cameraName], behaviorRecord);
                 _schedule[cameraName].RemoveFirst();
                 behaviorRecord = behaviorRecord.Restart();
                 _schedule[cameraName].AddLast(behaviorRecord);
             }
-        }
-
-        private void AddCameraToSchedule(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e.Action != NotifyCollectionChangedAction.Add)
-                return;
-
-            IEnumerable<string> newCameras = (IEnumerable<string>)e.NewItems;
-            foreach(string cameraName in newCameras)
-            {
-                _schedule.Add(cameraName, new LinkedList<CameraBehaviorRecord>());
-            }
-        }
-
-        public void AddBehaviorToCameraSchedule(
-            PeripheralProcessor ppu, 
-            CameraBehaviorRecord newBehavior)
-        {
-            AddBehaviorToCameraSchedule(ppu, newBehavior);
-        }
-
-        public void AddBehaviorToCameraSchedule(string cameraName, CameraBehaviorRecord newBehavior)
-        {
-            _schedule[cameraName].AddLast(newBehavior);
         }
     }
 
