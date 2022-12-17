@@ -58,18 +58,18 @@ namespace IntegratedSystemBigBrother
             MainProc.Network.Add("Камера 2", new PeripheralProcessor(cam2, "Камера 2"));
             MainProc.Network.Add("Камера 3", new PeripheralProcessor(cam3, "Камера 3"));
 
-            //cam1.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(25), "Иван Петрович");
-            //cam1.AddEmployeeDepartureToSchedule(TimeSpan.FromSeconds(15), "Семён Семёныч");
-            //cam1.AddOutsiderOnObjectToSchedule(TimeSpan.FromSeconds(25));
+            cam1.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(25), "Иван Петрович");
+            cam1.AddEmployeeDepartureToSchedule(TimeSpan.FromSeconds(15), "Семён Семёныч");
+            cam1.AddOutsiderOnObjectToSchedule(TimeSpan.FromSeconds(25));
 
             
             cam2.AddEmployeeDepartureToSchedule(TimeSpan.FromSeconds(20), "Олег Егорыч");
-            //cam2.AddStandardSituationToSchedule(TimeSpan.FromSeconds(10));
-            //cam2.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(15), "Вадим Вадимыч");
+            cam2.AddStandardSituationToSchedule(TimeSpan.FromSeconds(10));
+            cam2.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(15), "Вадим Вадимыч");
 
-            //cam3.AddStandardSituationToSchedule(TimeSpan.FromSeconds(15));
+            cam3.AddStandardSituationToSchedule(TimeSpan.FromSeconds(15));
             cam3.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(15), "Потап Ефимыч");
-            //cam3.AddOutsiderOnObjectToSchedule(TimeSpan.FromSeconds(20));
+            cam3.AddOutsiderOnObjectToSchedule(TimeSpan.FromSeconds(20));
             
 
             MainProc.CameraSelected += ShowCameraScreen;
@@ -203,7 +203,12 @@ namespace IntegratedSystemBigBrother
 
         public static void AddActorOnScreen(Path actor, string actorName)
         {
-            DispatchScreen(() => AddChildOnScreen(actor, actorName));
+            //DispatchScreen(() => AddChildOnScreen(actor, actorName));
+            /*
+             * Код добавления актёра пробрасывается в поток пользовательского интерфейса,
+             * чтобы можно было отловить исключение, если добавить объект Path не удастся.
+             */
+            UIContext.Send((obj) => AddChildOnScreen(actor, actorName), null);
         }
 
         public static void RemoveActorFromScreen(Path actor, string actorName)
@@ -241,7 +246,7 @@ namespace IntegratedSystemBigBrother
         {
             GridView eventLogGridView = (GridView)ISBBViewModel.View.EventLog.View;
             double eventLogActualWidth = ISBBViewModel.View.EventLog.ActualWidth;
-            double[] columnWidthPercentage = new double[4] { 0.08, 0.21, 0.31, 0.4 };
+            double[] columnWidthPercentage = new double[4] { 0.09, 0.3, 0.15, 0.45 };
 
             for (int i = 0; i < columnWidthPercentage.Length; i++)
                 eventLogGridView.Columns[i].Width = eventLogActualWidth * columnWidthPercentage[i];

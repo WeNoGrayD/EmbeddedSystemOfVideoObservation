@@ -28,6 +28,21 @@ namespace IntegratedSystemBigBrother
             return package;
         }
 
+        public static implicit operator string(PeripheralProcessor ppu)
+        {
+            return ppu.CameraName;
+        }
+
+        /// <summary>
+        /// Оператор приведения строки к типу периферийного процесса.
+        /// Используется только в одном месте.
+        /// </summary>
+        /// <param name="cameraName"></param>
+        public static implicit operator PeripheralProcessor(string cameraName)
+        {
+            return new PeripheralProcessor(null, cameraName);
+        }
+
         public bool Equals(PeripheralProcessor other)
         {
             return this.CameraName == other.CameraName;

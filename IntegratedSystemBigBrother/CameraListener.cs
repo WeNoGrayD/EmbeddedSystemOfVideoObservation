@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
@@ -27,6 +28,10 @@ namespace IntegratedSystemBigBrother
 
         protected static CameraScheduler _scheduler = ISBBViewModel.Scheduler;
 
+        protected CancellationTokenSource _listenTokenSource;
+
+        protected CancellationToken _listenToken { get { return _listenTokenSource.Token; } }
+
         public CameraListener(PeripheralProcessor listenedPPU)
         {
             _stopListenCamera = false;
@@ -37,6 +42,7 @@ namespace IntegratedSystemBigBrother
             {
                 _scheduler.CameraBehaviorEnd += BehaviorEndAlert;
             }
+            _listenTokenSource = new CancellationTokenSource();
         }
 
         public async Task Listen()
@@ -44,9 +50,15 @@ namespace IntegratedSystemBigBrother
             OnStartListenCamera();
             while (!_stopListenCamera)
             {
+                if (IsStillListening()) break;
                 await OnListenCamera();
             }
-            ;
+            OnStopListenCamera();
+        }
+
+        protected bool IsStillListening()
+        {
+            return _listenToken.IsCancellationRequested;
         }
 
         protected virtual void OnStartListenCamera()
@@ -85,18 +97,22 @@ namespace IntegratedSystemBigBrother
             lock (ISBBViewModel.Scheduler.CameraBehaviorEventLockingObject)
             {
                 //_scheduler.CameraBehaviorStart -= StartObserve;
-                _scheduler.CameraBehaviorEnd -= HideActor;
+                //_scheduler.CameraBehaviorEnd -= HideActor;
                 _scheduler.CameraBehaviorEnd -= StopObserve;
                 _scheduler.CameraBehaviorEnd -= BehaviorEndAlert;
             }
-            HideActor(null, CameraBehaviorRecord.Empty);
-            StopObserve(null, CameraBehaviorRecord.Empty);
+            if (_showActor)
+            {
+                HideActor(CameraName, CameraBehaviorRecord.Empty);
+                StopObserve(CameraName, CameraBehaviorRecord.Empty);
+            }
+            _listenTokenSource.Dispose();
         }
 
         public async Task StartObserve(PeripheralProcessor ppu, CameraBehaviorRecord behaviorRecord)
         {
-            //DispatchScreen(() => AddChildOnScreen(ppu.AgregatedCamera.Actor, ""));
-            
+            if (IsStillListening()) return;
+
             await _listenedCamera.StartObserve();
 
             if (behaviorRecord.IsRunning)
@@ -105,7 +121,20 @@ namespace IntegratedSystemBigBrother
                 TimeSpan seekTime = behaviorRecord.Duration - behaviorRecord.TimeToEnd;
                 ISBBViewModel.DispatchAnimation(animation, () => animation.Seek(_listenedCamera.Actor, seekTime, TimeSeekOrigin.BeginTime));
             }
-            ISBBViewModel.AddActorOnScreen(_listenedCamera.Actor, "actor");
+            try
+            {
+                ISBBViewModel.AddActorOnScreen(_listenedCamera.Actor, "actor");
+            }
+            /*
+             * Может возникнуть исключение при попытке добавления актёра на экран.
+             * Это не ошибка: это означает, что метод выполнялся в промежутке
+             * между двумя проверками на актуальность слушателя, в котором 
+             * слушатель становится неактуальным.
+             */
+            catch (ArgumentException e)
+            {
+                ;
+            }
         }
 
         /// <summary>
@@ -119,6 +148,9 @@ namespace IntegratedSystemBigBrother
         public async Task ShowActorAndStartAnimation(PeripheralProcessor ppu, CameraBehaviorRecord behaviorRecord)
         {
             if (ppu.CameraName != CameraName) return;
+
+            if (IsStillListening()) return;
+
             lock (_scheduler.CameraBehaviorEventLockingObject)
             {
                 _scheduler.CameraBehaviorStart -= ShowActorAndStartAnimation;
@@ -136,6 +168,8 @@ namespace IntegratedSystemBigBrother
         /// <returns></returns>
         public async Task HideActor(PeripheralProcessor ppu, CameraBehaviorRecord behaviorRecord)
         {
+            if (ppu.CameraName != CameraName) return;
+
             lock (_scheduler.CameraBehaviorEventLockingObject)
             {
                 _scheduler.CameraBehaviorEnd -= HideActor;
@@ -146,32 +180,36 @@ namespace IntegratedSystemBigBrother
 
         public async Task StopObserve(PeripheralProcessor ppu, CameraBehaviorRecord behaviorRecord)
         {
+            if (ppu.CameraName != CameraName) return;
+
             _listenedCamera.StopObserve();
         }
 
         public async Task BehaviorEndAlert(PeripheralProcessor ppu, CameraBehaviorRecord behaviorRecord)
         {
+            if (ppu.CameraName != CameraName) return;
+
             lock (_behaviorEndedLockerObject)
             {
                 _behaviorEnded = true;
             }
         }
 
+        /// <summary>
+        /// Запуск окончания работы слушателя.
+        /// </summary>
         public void Dispose()
         {
             _stopListenCamera = true;
-            OnStopListenCamera();
+            _listenTokenSource.Cancel();
         }
 
         public virtual void Visit(CameraStandardSituationDataPackage package)
         {
-            if (package.MessageImportance != _observedEvent)
-            {
-                _observedEvent = package.MessageImportance;
-                ISBBViewModel.ClearChildrenFromScreenDispatched();
-                ISBBViewModel.ShowCorridor(_listenedCamera);
-                _showActor = false;
-            }
+            _observedEvent = package.MessageImportance;
+            ISBBViewModel.ClearChildrenFromScreenDispatched();
+            ISBBViewModel.ShowCorridor(_listenedCamera);
+            _showActor = false;
         }
 
         public virtual void Visit(CameraEmployeeArrivalDataPackage package)
