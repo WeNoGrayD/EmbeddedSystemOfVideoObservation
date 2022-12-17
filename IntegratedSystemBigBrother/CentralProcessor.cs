@@ -136,19 +136,21 @@ namespace IntegratedSystemBigBrother
                 if (!IsInObservingMode)
                 {
                     //CameraSelected?.Invoke(Network[package.CameraName]);
-                    /*
+                    
                     ISBBViewModel.UIContext.Send((obj) =>
                     {
                         ISBBViewModel.View.CameraSelector.Text = package.CameraName;
                     },
                     null);
-                    */
+                    
+                    /*
                     ISBBViewModel.OnCameraSelectorSelectionChanged
                         (this,
                          new System.Windows.Controls.SelectionChangedEventArgs(
                              null,
                              null,
                              new ArrayList(new[] { package.CameraName })));
+                             */
                 }
             }
         }

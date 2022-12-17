@@ -19,7 +19,11 @@ namespace IntegratedSystemBigBrother
 
         protected CameraDataPackage.EventDescription _observedEvent;
 
-        protected static bool _showActor;
+        protected bool _showActor;
+
+        protected bool _behaviorEnded;
+
+        protected object _behaviorEndedLockerObject = 1;
 
         protected static CameraScheduler _scheduler = ISBBViewModel.Scheduler;
 
@@ -28,6 +32,11 @@ namespace IntegratedSystemBigBrother
             _stopListenCamera = false;
             _listenedCamera = listenedPPU.AgregatedCamera;
             CameraName = listenedPPU.CameraName;
+            _behaviorEnded = false;
+            lock (ISBBViewModel.Scheduler.CameraBehaviorEventLockingObject)
+            {
+                _scheduler.CameraBehaviorEnd += BehaviorEndAlert;
+            }
         }
 
         public async Task Listen()
@@ -37,6 +46,7 @@ namespace IntegratedSystemBigBrother
             {
                 await OnListenCamera();
             }
+            ;
         }
 
         protected virtual void OnStartListenCamera()
@@ -55,12 +65,16 @@ namespace IntegratedSystemBigBrother
             {
                 _listenedCamera.SendPackage().Accept(this); // Делается в обход периферийного процессора.
             }
-            if (_observedEvent != prevObservedEvent && _showActor)
+            lock (_behaviorEndedLockerObject)
             {
-                lock (_scheduler.CameraBehaviorEventLockingObject)
+                if ((_observedEvent != prevObservedEvent || _behaviorEnded) && _showActor)
                 {
-                    _scheduler.CameraBehaviorStart += ShowActorAndStartAnimation;
-                    _scheduler.CameraBehaviorEnd += HideActor;
+                    _behaviorEnded = false;
+                    lock (_scheduler.CameraBehaviorEventLockingObject)
+                    {
+                        _scheduler.CameraBehaviorStart += ShowActorAndStartAnimation;
+                        _scheduler.CameraBehaviorEnd += HideActor;
+                    }
                 }
             }
             await Task.Delay(TimeSpan.FromSeconds(1));
@@ -71,21 +85,27 @@ namespace IntegratedSystemBigBrother
             lock (ISBBViewModel.Scheduler.CameraBehaviorEventLockingObject)
             {
                 //_scheduler.CameraBehaviorStart -= StartObserve;
+                _scheduler.CameraBehaviorEnd -= HideActor;
                 _scheduler.CameraBehaviorEnd -= StopObserve;
+                _scheduler.CameraBehaviorEnd -= BehaviorEndAlert;
             }
+            HideActor(null, CameraBehaviorRecord.Empty);
+            StopObserve(null, CameraBehaviorRecord.Empty);
         }
 
         public async Task StartObserve(PeripheralProcessor ppu, CameraBehaviorRecord behaviorRecord)
         {
-            if (ppu.CameraName != CameraName) return;
             //DispatchScreen(() => AddChildOnScreen(ppu.AgregatedCamera.Actor, ""));
+            /*
             if (behaviorRecord.IsRunning)
             {
                 Storyboard animation = _listenedCamera.Animation;
                 TimeSpan seekTime = behaviorRecord.Duration - behaviorRecord.TimeToEnd;
                 ISBBViewModel.DispatchAnimation(animation, () => animation.Seek(seekTime));
             }
-            _listenedCamera.StartObserve();
+            */
+            await _listenedCamera.StartObserve();
+            ISBBViewModel.AddActorOnScreen(_listenedCamera.Actor, "actor");
         }
 
         /// <summary>
@@ -98,11 +118,11 @@ namespace IntegratedSystemBigBrother
         /// <returns></returns>
         public async Task ShowActorAndStartAnimation(PeripheralProcessor ppu, CameraBehaviorRecord behaviorRecord)
         {
+            if (ppu.CameraName != CameraName) return;
             lock (_scheduler.CameraBehaviorEventLockingObject)
             {
                 _scheduler.CameraBehaviorStart -= ShowActorAndStartAnimation;
             }
-            ISBBViewModel.AddActorOnScreen(_listenedCamera.Actor, "actor");
             await StartObserve(ppu, behaviorRecord);
         }
 
@@ -127,6 +147,14 @@ namespace IntegratedSystemBigBrother
         public async Task StopObserve(PeripheralProcessor ppu, CameraBehaviorRecord behaviorRecord)
         {
             _listenedCamera.StopObserve();
+        }
+
+        public async Task BehaviorEndAlert(PeripheralProcessor ppu, CameraBehaviorRecord behaviorRecord)
+        {
+            lock (_behaviorEndedLockerObject)
+            {
+                _behaviorEnded = true;
+            }
         }
 
         public void Dispose()

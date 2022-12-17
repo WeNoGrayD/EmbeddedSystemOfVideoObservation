@@ -32,6 +32,8 @@ namespace IntegratedSystemBigBrother
 
         public static SynchronizationContext UIContext { get; set; }
 
+        public static RoutedEvent CameraSelected;
+
         public static readonly CentralProcessor MainProc;
 
         public static readonly CameraScheduler Scheduler;
@@ -56,19 +58,19 @@ namespace IntegratedSystemBigBrother
             MainProc.Network.Add("Камера 2", new PeripheralProcessor(cam2, "Камера 2"));
             MainProc.Network.Add("Камера 3", new PeripheralProcessor(cam3, "Камера 3"));
 
-            cam1.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(10), "Иван Петрович");
-            cam1.AddEmployeeDepartureToSchedule(TimeSpan.FromSeconds(15), "Семён Семёныч");
-            cam1.AddOutsiderOnObjectToSchedule(TimeSpan.FromSeconds(25));
+            //cam1.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(25), "Иван Петрович");
+            //cam1.AddEmployeeDepartureToSchedule(TimeSpan.FromSeconds(15), "Семён Семёныч");
+            //cam1.AddOutsiderOnObjectToSchedule(TimeSpan.FromSeconds(25));
 
-            /*
+            
             cam2.AddEmployeeDepartureToSchedule(TimeSpan.FromSeconds(20), "Олег Егорыч");
-            cam2.AddStandardSituationToSchedule(TimeSpan.FromSeconds(10));
-            cam2.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(15), "Вадим Вадимыч");
+            //cam2.AddStandardSituationToSchedule(TimeSpan.FromSeconds(10));
+            //cam2.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(15), "Вадим Вадимыч");
 
-            cam3.AddStandardSituationToSchedule(TimeSpan.FromSeconds(15));
+            //cam3.AddStandardSituationToSchedule(TimeSpan.FromSeconds(15));
             cam3.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(15), "Потап Ефимыч");
-            cam3.AddOutsiderOnObjectToSchedule(TimeSpan.FromSeconds(20));
-            */
+            //cam3.AddOutsiderOnObjectToSchedule(TimeSpan.FromSeconds(20));
+            
 
             MainProc.CameraSelected += ShowCameraScreen;
             MainProc.BigBrotherClosedEye += TurnOffScreen;

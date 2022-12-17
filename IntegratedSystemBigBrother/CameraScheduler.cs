@@ -174,6 +174,9 @@ namespace IntegratedSystemBigBrother
 
     public struct CameraBehaviorRecord
     {
+        public static readonly CameraBehaviorRecord Empty =
+            new CameraBehaviorRecord();
+
         public readonly Func<Task> Behavior;
 
         public readonly TimeSpan Duration;
