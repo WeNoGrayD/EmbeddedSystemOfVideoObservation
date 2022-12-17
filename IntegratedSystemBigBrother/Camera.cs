@@ -46,6 +46,8 @@ namespace IntegratedSystemBigBrother
 
         public Storyboard Animation { get; protected set; }
 
+        public readonly object StateLockerObject = 1; 
+
         public Camera()
         {
             DrawCorridor();

@@ -223,7 +223,7 @@ namespace IntegratedSystemBigBrother
             return new CameraBehaviorRecord(
                 this.Behavior,
                 this.Duration,
-                this.TimeToEnd);
+                this.Duration);
         }
 
         public CameraBehaviorRecord UpdateTimeToEnd(TimeSpan wastedTime)

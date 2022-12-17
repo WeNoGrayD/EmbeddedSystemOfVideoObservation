@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Collections.ObjectModel;
+using System.Collections;
 
 namespace IntegratedSystemBigBrother
 {
@@ -75,7 +76,7 @@ namespace IntegratedSystemBigBrother
             {
                 SurveyUser();
                 foreach (PeripheralProcessor pProc in Network.Values.Where(ppu => ppu != null))
-                    ;// SurveyPeripheral(pProc);
+                    SurveyPeripheral(pProc);
             }
 
             return;
@@ -91,7 +92,11 @@ namespace IntegratedSystemBigBrother
 
             void SurveyPeripheral(PeripheralProcessor pProc)
             {
-                CameraDataPackage cdp = pProc.SendPackage();
+                CameraDataPackage cdp;
+                lock (pProc.AgregatedCamera.StateLockerObject)
+                {
+                    cdp = pProc.SendPackage();
+                }
                 cdp.Accept(this);
             }
         }
@@ -104,35 +109,58 @@ namespace IntegratedSystemBigBrother
         public void Visit(CameraEmployeeArrivalDataPackage package)
         {
             if (EventLog.Count > 10)
-                return;
+                DequeuePackageFromEventLog();
             if (package.IsFirstInSeries)
             {
-                EventLog.Add(package);
+                AddPackageToEventLog(package);
             }
         }
 
         public void Visit(CameraEmployeeDepartureDataPackage package)
         {
             if (EventLog.Count > 10)
-                return;
+                DequeuePackageFromEventLog();
             if (package.IsFirstInSeries)
             {
-                EventLog.Add(package);
+                AddPackageToEventLog(package);
             }
         }
 
         public void Visit(CameraOutsiderOnObjectDataPackage package)
         {
             if (EventLog.Count > 10)
-                return;
+                DequeuePackageFromEventLog();
             if (package.IsFirstInSeries)
             {
-                EventLog.Add(package);
+                AddPackageToEventLog(package);
                 if (!IsInObservingMode)
                 {
-                    CameraSelected?.Invoke(Network[package.CameraName]);
+                    //CameraSelected?.Invoke(Network[package.CameraName]);
+                    /*
+                    ISBBViewModel.UIContext.Send((obj) =>
+                    {
+                        ISBBViewModel.View.CameraSelector.Text = package.CameraName;
+                    },
+                    null);
+                    */
+                    ISBBViewModel.OnCameraSelectorSelectionChanged
+                        (this,
+                         new System.Windows.Controls.SelectionChangedEventArgs(
+                             null,
+                             null,
+                             new ArrayList(new[] { package.CameraName })));
                 }
             }
+        }
+
+        private void AddPackageToEventLog(CameraDataPackage package)
+        {
+            ISBBViewModel.UIContext.Send((obj) => EventLog.Add(package), null);
+        }
+
+        private void DequeuePackageFromEventLog()
+        {
+            ISBBViewModel.UIContext.Send((obj) => EventLog.RemoveAt(0), null);
         }
 
         private void CameraSelectionByUser(string cameraName)

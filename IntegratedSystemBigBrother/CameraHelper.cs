@@ -99,7 +99,11 @@ namespace IntegratedSystemBigBrother
             TimeSpan duration,
             params object[] additionParams)
         {
-            SendPackage = () => new CameraStandardSituationDataPackage(DateTime.Now, IsFirstPackageInSeries);
+            lock (StateLockerObject)
+            {
+                IsFirstPackageInSeries = true;
+                SendPackage = () => new CameraStandardSituationDataPackage(DateTime.Now, IsFirstPackageInSeries);
+            }
             //await Task.Delay(duration).ConfigureAwait(false);
             return;
         }
@@ -108,8 +112,13 @@ namespace IntegratedSystemBigBrother
             TimeSpan duration,
             params object[] additionParams)
         {
-            string employeeName = (string)additionParams[0];
-            SendPackage = () => new CameraEmployeeArrivalDataPackage(DateTime.Now, IsFirstPackageInSeries, employeeName);
+            lock (StateLockerObject)
+            {
+                IsFirstPackageInSeries = true;
+                string employeeName = (string)additionParams[0];
+                SendPackage = () => new CameraEmployeeArrivalDataPackage(DateTime.Now, IsFirstPackageInSeries, employeeName);
+            }
+
             Animation = ISBBViewModel.Animations[$"{this.TypeKey}/EmployeeArrival"];
             //ISBBViewModel.UIContext.Send((obj) => Animation = BuildEmployeeArrivalAnimation(TimeSpan.FromSeconds(10)), null);
             //Animation.RepeatBehavior = RepeatBehavior.Forever;
@@ -123,8 +132,13 @@ namespace IntegratedSystemBigBrother
             TimeSpan duration,
             params object[] additionParams)
         {
-            string employeeName = (string)additionParams[0];
-            SendPackage = () => new CameraEmployeeDepartureDataPackage(DateTime.Now, IsFirstPackageInSeries, employeeName);
+            lock (StateLockerObject)
+            {
+                IsFirstPackageInSeries = true;
+                string employeeName = (string)additionParams[0];
+                SendPackage = () => new CameraEmployeeDepartureDataPackage(DateTime.Now, IsFirstPackageInSeries, employeeName);
+            }
+
             Animation = ISBBViewModel.Animations[$"{this.TypeKey}/EmployeeDeparture"];
             //ISBBViewModel.UIContext.Send((obj) => Animation = BuildEmployeeDepartureAnimation(TimeSpan.FromSeconds(10)), null);
             //Animation.RepeatBehavior = RepeatBehavior.Forever;
@@ -139,7 +153,12 @@ namespace IntegratedSystemBigBrother
             TimeSpan duration,
             params object[] additionParams)
         {
-            SendPackage = () => new CameraOutsiderOnObjectDataPackage(DateTime.Now, IsFirstPackageInSeries);
+            lock (StateLockerObject)
+            {
+                SendPackage = () => new CameraOutsiderOnObjectDataPackage(DateTime.Now, IsFirstPackageInSeries);
+                IsFirstPackageInSeries = true;
+            }
+
             Animation = ISBBViewModel.Animations[$"{this.TypeKey}/OutsiderOnObject"];
             //ISBBViewModel.UIContext.Send((obj) => Animation = BuildOutsiderOnObjectAnimation(TimeSpan.FromSeconds(10)), null);
             //Animation.RepeatBehavior = RepeatBehavior.Forever;

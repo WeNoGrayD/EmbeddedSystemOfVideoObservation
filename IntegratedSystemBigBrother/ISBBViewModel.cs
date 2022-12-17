@@ -56,7 +56,7 @@ namespace IntegratedSystemBigBrother
             MainProc.Network.Add("Камера 2", new PeripheralProcessor(cam2, "Камера 2"));
             MainProc.Network.Add("Камера 3", new PeripheralProcessor(cam3, "Камера 3"));
 
-            //cam1.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(10), "Иван Петрович");
+            cam1.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(10), "Иван Петрович");
             cam1.AddEmployeeDepartureToSchedule(TimeSpan.FromSeconds(15), "Семён Семёныч");
             cam1.AddOutsiderOnObjectToSchedule(TimeSpan.FromSeconds(25));
 
@@ -138,7 +138,7 @@ namespace IntegratedSystemBigBrother
             DispatchScreen(() => SetScreenBackground(Brushes.Transparent));
             //_currentCamera = selectedCamera;
             _currentListener = new CameraOnScreenListener(selectedPPU);
-            Task.Run((Action)_currentListener.Listen);
+            Task.Run(_currentListener.Listen);
         }
 
         private static void SetScreenBackground(Brush brush)
@@ -151,12 +151,12 @@ namespace IntegratedSystemBigBrother
             return View.Screen.Children.Contains(obj);
         }
 
-        private static void AddChildOnScreen(Path obj, string name)
+        private static void AddChildOnScreen(Path obj, string objName)
         {
             View.Screen.Children.Add(obj);
         }
 
-        private static void RemoveChildFromScreen(Path obj)
+        private static void RemoveChildFromScreen(Path obj, string objName)
         {
             View.Screen.Children.Remove(obj);
         }
@@ -173,94 +173,40 @@ namespace IntegratedSystemBigBrother
 
         public static void ShowCorridor(Camera selectedCamera)
         {
-            if (!(bool)DispatchScreen(() => ScreenContainsObject(selectedCamera.Corridor)))
-            {
-                DispatchScreen(() => AddChildOnScreen(selectedCamera.Corridor, "corr"));
-            }
+            DispatchScreen(() => AddChildOnScreen(selectedCamera.Corridor, "corr"));
         }
 
         public static void ShowEmployee(Camera selectedCamera)
         {
-            if (!(bool)DispatchScreen(() => ScreenContainsObject(selectedCamera.Actor)))
-            {
-                Path employee = (Path)View.Resources["EmployeePath"];
-                selectedCamera.Actor = employee;
-                /*
-                DispatchAnimation(
-                        selectedCamera.Animation, 
-                        () => selectedCamera.Animation.Completed += (sender, e) =>
-                            { DispatchScreen(() => RemoveChildFromScreen(employee)); });
-                            */
-                SubscribeOnSchedulerEvents(
-                    () => DispatchScreen(() => AddChildOnScreen(employee, "emp")),
-                    () => DispatchScreen(() => RemoveChildFromScreen(employee)));
-            }
-            else
-                SubscribeOnSchedulerEvents(null, null);
-    }
+            Path employee = (Path)View.Resources["EmployeePath"];
+            selectedCamera.Actor = employee;
+            /*
+            DispatchAnimation(
+                    selectedCamera.Animation, 
+                    () => selectedCamera.Animation.Completed += (sender, e) =>
+                        { DispatchScreen(() => RemoveChildFromScreen(employee)); });
+                        */
+        }
 
         public static void ShowOutsider(Camera selectedCamera)
         {
-            if (!(bool)DispatchScreen(() => ScreenContainsObject(selectedCamera.Actor)))
-            {
-                Path outsider = (Path)View.Resources["OutsiderPath"];
-                selectedCamera.Actor = outsider;
-                /*
-                DispatchAnimation(
-                        selectedCamera.Animation,
-                        () => selectedCamera.Animation.Completed += (sender, e) =>
-                        { DispatchScreen(() => RemoveChildFromScreen(outsider)); });*/
-                SubscribeOnSchedulerEvents(
-                    () => DispatchScreen(() => AddChildOnScreen(outsider, "out")),
-                    () => DispatchScreen(() => RemoveChildFromScreen(outsider)));
-            }
-            else
-                SubscribeOnSchedulerEvents(null, null);
-        }
-
-        private static void SubscribeOnSchedulerEvents(Action addActor, Action removeActor)
-        {
-            lock (Scheduler.CameraBehaviorEventLockingObject)
-            {
-                Scheduler.CameraBehaviorStart += StartObserve;
-                if (addActor != null) Scheduler.CameraBehaviorStart += async (_1, _2) => addActor();
-                Scheduler.CameraBehaviorEnd += StopObserve;
-                if (removeActor != null) Scheduler.CameraBehaviorEnd += async (_1, _2) => removeActor();
-            }
+            Path outsider = (Path)View.Resources["OutsiderPath"];
+            selectedCamera.Actor = outsider;
             /*
-            Scheduler.CameraBehaviorEnd += async (_1, _2) => 
-            {
-                UnsubscribeOnSchedulerEvents();
-                await Task.FromResult(0);
-            };
-            */
+            DispatchAnimation(
+                    selectedCamera.Animation,
+                    () => selectedCamera.Animation.Completed += (sender, e) =>
+                    { DispatchScreen(() => RemoveChildFromScreen(outsider)); });*/
         }
 
-        private static void UnsubscribeOnSchedulerEvents()
+        public static void AddActorOnScreen(Path actor, string actorName)
         {
-            Scheduler.CameraBehaviorStart -= StartObserve;
-            Scheduler.CameraBehaviorEnd -= StopObserve;
+            DispatchScreen(() => AddChildOnScreen(actor, actorName));
         }
 
-        private static async Task StartObserve(PeripheralProcessor ppu, CameraBehaviorRecord behaviorRecord)
+        public static void RemoveActorFromScreen(Path actor, string actorName)
         {
-            DispatchScreen(() => AddChildOnScreen(ppu.AgregatedCamera.Actor, ""));
-            if (ppu.CameraName != _currentListener.CameraName) return;
-            if (!behaviorRecord.IsRunning)
-            {
-                ppu.AgregatedCamera.StartObserve();
-            }
-            else
-            {
-                Storyboard animation = ppu.AgregatedCamera.Animation;
-                TimeSpan seekTime = behaviorRecord.Duration - behaviorRecord.TimeToEnd;
-                DispatchAnimation(animation, () => animation.Seek(seekTime));
-            }
-        }
-
-        private static async Task StopObserve(PeripheralProcessor ppu, CameraBehaviorRecord behaviorRecord)
-        {
-            ppu.AgregatedCamera.StopObserve();
+            DispatchScreen(() => RemoveChildFromScreen(actor, actorName));
         }
 
         public static void DispatchScreen(Action action)

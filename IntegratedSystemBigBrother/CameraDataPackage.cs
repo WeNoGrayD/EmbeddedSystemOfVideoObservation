@@ -21,9 +21,11 @@ namespace IntegratedSystemBigBrother
             RecordingOngoing
         }
 
-        public readonly DateTime TimeStamp;
+        public DateTime TimeStamp { get; protected set; }
 
         public readonly EventDescription MessageImportance;
+
+        public string Message { get { return GetMessage(); } }
 
         public string CameraName { get; set; }
 

@@ -59,10 +59,7 @@ namespace IntegratedSystemBigBrother
             DoubleAnimation employeeForwardStrokeThicknessAnimation =
                 new DoubleAnimation(strokeThicknessFrom, strokeThicknessTo, duration) { FillBehavior = FillBehavior.HoldEnd };
 
-            Storyboard employeeStoryboard = new Storyboard()
-            {
-                RepeatBehavior = RepeatBehavior.Forever
-            };
+            Storyboard employeeStoryboard = new Storyboard();
             employeeStoryboard.Children.Add(employeeForwardMovingAnimation);
             employeeStoryboard.Children.Add(employeeForwardStrokeThicknessAnimation);
 
@@ -86,10 +83,7 @@ namespace IntegratedSystemBigBrother
             DoubleAnimation employeeBackwardStrokeThicknessAnimation =
                 new DoubleAnimation(strokeThicknessFrom, strokeThicknessTo, duration) { FillBehavior = FillBehavior.HoldEnd };
 
-            Storyboard employeeStoryboard = new Storyboard()
-            {
-                RepeatBehavior = RepeatBehavior.Forever
-            };
+            Storyboard employeeStoryboard = new Storyboard();
             employeeStoryboard.Children.Add(employeeBackwardMovingAnimation);
             employeeStoryboard.Children.Add(employeeBackwardStrokeThicknessAnimation);
 
@@ -123,8 +117,7 @@ namespace IntegratedSystemBigBrother
 
             Storyboard outsiderStoryboard = new Storyboard()
             {
-                Duration = duration + duration + backwardAnimationDelay,
-                RepeatBehavior = RepeatBehavior.Forever
+                Duration = duration + duration + backwardAnimationDelay
             };
             outsiderStoryboard.Children.Add(outsiderForwardMovingAnimation);
             outsiderStoryboard.Children.Add(outsiderBackwardMovingAnimation);
