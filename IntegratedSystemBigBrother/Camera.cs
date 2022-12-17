@@ -14,6 +14,8 @@ namespace IntegratedSystemBigBrother
     /// </summary>
     public abstract partial class Camera
     {
+        public virtual string TypeKey { get { return null; } }
+
         public delegate Task CameraScheduledBehaviorAsyncDelegate(
             TimeSpan duration, 
             params object[] additionParams);
@@ -73,12 +75,14 @@ namespace IntegratedSystemBigBrother
 
         public void StartObserve()
         {
-            Actor.Dispatch(() => Actor.BeginStoryboard(Animation));
+            if (Animation != null)
+                Actor.Dispatch(() => Actor.BeginStoryboard(Animation));
         }
 
         public void StopObserve()
         {
-            Animation.Dispatch((Action)Animation.Stop);
+            if (Animation != null)
+                Animation.Dispatch((Action)Animation.Stop);
         }
 
         protected void AddBehaviorToSchedule(Func<Task> behavior, TimeSpan duration)

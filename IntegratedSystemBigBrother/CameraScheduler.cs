@@ -19,12 +19,22 @@ namespace IntegratedSystemBigBrother
 
         public event Func<PeripheralProcessor, CameraBehaviorRecord, Task> CameraBehaviorEnd;
 
+        public readonly object CameraBehaviorEventLockingObject = 0; 
+
         public CameraScheduler(CentralProcessor cpu)
         {
             _cpu = cpu;
             _schedule = new Dictionary<string, LinkedList<CameraBehaviorRecord>>();
             _cpu.Network.CollectionChanged += AddCameraToSchedule;
-            CameraBehaviorStart += async (_1, _2) => { await _2.Behavior(); };
+            CameraBehaviorStart += ManageCameraBehavior;
+        }
+
+        private async Task ManageCameraBehavior(PeripheralProcessor ppu, CameraBehaviorRecord behaviorRecord)
+        {
+            if (!behaviorRecord.IsRunning)
+            {
+                await behaviorRecord.Behavior();
+            }
         }
 
         private void AddCameraToSchedule(object sender, NotifyCollectionChangedEventArgs e)
@@ -69,7 +79,8 @@ namespace IntegratedSystemBigBrother
 
         public async Task RunScheduleAsync(CancellationToken token)
         {
-            TimeSpan wastedTime;
+            TimeSpan wastedTime,
+                     delayTime = TimeSpan.FromSeconds(1);
 
             ClearEmptyCameraSchedules();
             while (true)
@@ -77,8 +88,8 @@ namespace IntegratedSystemBigBrother
                 if (token.IsCancellationRequested) return;
                 RunUrgentBehaviors();
                 wastedTime = RetrieveClosiestBehaviorTimeToStart();
-                await WaitFor(wastedTime);
-                ShiftSchedule(wastedTime);
+                await WaitFor(delayTime);
+                ShiftSchedule(delayTime);
             }
 
             return;
@@ -101,12 +112,15 @@ namespace IntegratedSystemBigBrother
             {
                 cameraSchedule = _schedule[cameraName];
                 behaviorRecord = cameraSchedule.First();
+                lock (CameraBehaviorEventLockingObject)
+                {
+                    CameraBehaviorStart?.Invoke(_cpu.Network[cameraName], behaviorRecord);
+                }
                 if (!behaviorRecord.IsRunning)
                 {
                     cameraSchedule.RemoveFirst();
                     behaviorRecord = behaviorRecord.Run();
                     cameraSchedule.AddFirst(behaviorRecord);
-                    CameraBehaviorStart?.Invoke(_cpu.Network[cameraName], behaviorRecord);
                 }
             }
         }
@@ -147,7 +161,10 @@ namespace IntegratedSystemBigBrother
 
             void ShiftBehaviorRecordWithZeroTimeToEnd(string cameraName)
             {
-                CameraBehaviorEnd?.Invoke(_cpu.Network[cameraName], behaviorRecord);
+                lock (CameraBehaviorEventLockingObject)
+                {
+                    CameraBehaviorEnd?.Invoke(_cpu.Network[cameraName], behaviorRecord);
+                }
                 _schedule[cameraName].RemoveFirst();
                 behaviorRecord = behaviorRecord.Restart();
                 _schedule[cameraName].AddLast(behaviorRecord);

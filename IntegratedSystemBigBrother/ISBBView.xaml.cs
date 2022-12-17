@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Threading;
 
 namespace IntegratedSystemBigBrother
 {
@@ -27,6 +28,7 @@ namespace IntegratedSystemBigBrother
             InitializeComponent();
 
             ISBBViewModel.View = this;
+            ISBBViewModel.UIContext = SynchronizationContext.Current;
 
             /*Camera cam = new CameraWatchingFromWallCentre();
 

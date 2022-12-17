@@ -55,7 +55,7 @@ namespace IntegratedSystemBigBrother
 
         private Action CameraSelectionByUserHandler;
 
-        public event Action<Camera> CameraSelected;
+        public event Action<PeripheralProcessor> CameraSelected;
         public event Action BigBrotherClosedEye;
 
         public CentralProcessor()
@@ -75,7 +75,7 @@ namespace IntegratedSystemBigBrother
             {
                 SurveyUser();
                 foreach (PeripheralProcessor pProc in Network.Values.Where(ppu => ppu != null))
-                    SurveyPeripheral(pProc);
+                    ;// SurveyPeripheral(pProc);
             }
 
             return;
@@ -130,7 +130,7 @@ namespace IntegratedSystemBigBrother
                 EventLog.Add(package);
                 if (!IsInObservingMode)
                 {
-                    CameraSelected?.Invoke(Network[package.CameraName].AgregatedCamera);
+                    CameraSelected?.Invoke(Network[package.CameraName]);
                 }
             }
         }
@@ -144,7 +144,7 @@ namespace IntegratedSystemBigBrother
             }
             else
             {
-                CameraSelected?.Invoke(Network[cameraName].AgregatedCamera);
+                CameraSelected?.Invoke(Network[cameraName]);
             }
         }
 

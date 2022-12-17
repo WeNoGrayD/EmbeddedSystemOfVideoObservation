@@ -8,6 +8,7 @@ using System.Windows.Shapes;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Controls;
+using System.Threading;
 
 namespace IntegratedSystemBigBrother
 {
@@ -62,17 +63,11 @@ namespace IntegratedSystemBigBrother
 
         public abstract void DrawCorridor();
 
-        public abstract Storyboard BuildEmployeeArrivalAnimation(
-            Path employee,
-            TimeSpan duration);
+        public abstract Storyboard BuildEmployeeArrivalAnimation(TimeSpan duration);
 
-        public abstract Storyboard BuildEmployeeDepartureAnimation(
-            Path employee,
-            TimeSpan duration);
+        public abstract Storyboard BuildEmployeeDepartureAnimation(TimeSpan duration);
 
-        public abstract Storyboard BuildOutsiderOnObjectAnimation(
-            Path outsider,
-            TimeSpan duration);
+        public abstract Storyboard BuildOutsiderOnObjectAnimation(TimeSpan duration);
 
         protected static void SetDesiredFrameRateForStoryboard(Storyboard animations)
         {
@@ -115,8 +110,9 @@ namespace IntegratedSystemBigBrother
         {
             string employeeName = (string)additionParams[0];
             SendPackage = () => new CameraEmployeeArrivalDataPackage(DateTime.Now, IsFirstPackageInSeries, employeeName);
-            Animation = BuildEmployeeArrivalAnimation(Actor, TimeSpan.FromSeconds(10));
-            Animation.RepeatBehavior = RepeatBehavior.Forever;
+            Animation = ISBBViewModel.Animations[$"{this.TypeKey}/EmployeeArrival"];
+            //ISBBViewModel.UIContext.Send((obj) => Animation = BuildEmployeeArrivalAnimation(TimeSpan.FromSeconds(10)), null);
+            //Animation.RepeatBehavior = RepeatBehavior.Forever;
             //Actor.BeginStoryboard(Animation);
             //await Task.Delay(duration).ConfigureAwait(false);
             //Animation.Stop();
@@ -129,8 +125,9 @@ namespace IntegratedSystemBigBrother
         {
             string employeeName = (string)additionParams[0];
             SendPackage = () => new CameraEmployeeDepartureDataPackage(DateTime.Now, IsFirstPackageInSeries, employeeName);
-            Actor = DrawEmployee();
-            Animation = BuildEmployeeDepartureAnimation(Actor, TimeSpan.FromSeconds(10));
+            Animation = ISBBViewModel.Animations[$"{this.TypeKey}/EmployeeDeparture"];
+            //ISBBViewModel.UIContext.Send((obj) => Animation = BuildEmployeeDepartureAnimation(TimeSpan.FromSeconds(10)), null);
+            //Animation.RepeatBehavior = RepeatBehavior.Forever;
             //Animation.RepeatBehavior = RepeatBehavior.Forever;
             //Actor.BeginStoryboard(Animation);
             //await Task.Delay(duration).ConfigureAwait(false);
@@ -143,9 +140,9 @@ namespace IntegratedSystemBigBrother
             params object[] additionParams)
         {
             SendPackage = () => new CameraOutsiderOnObjectDataPackage(DateTime.Now, IsFirstPackageInSeries);
-            Actor = DrawEmployee();
-            Animation = BuildOutsiderOnObjectAnimation(Actor, TimeSpan.FromSeconds(10));
-            Animation.RepeatBehavior = RepeatBehavior.Forever;
+            Animation = ISBBViewModel.Animations[$"{this.TypeKey}/OutsiderOnObject"];
+            //ISBBViewModel.UIContext.Send((obj) => Animation = BuildOutsiderOnObjectAnimation(TimeSpan.FromSeconds(10)), null);
+            //Animation.RepeatBehavior = RepeatBehavior.Forever;
             //Actor.BeginStoryboard(Animation);
             //await Task.Delay(duration).ConfigureAwait(false);
             //Animation.Stop();

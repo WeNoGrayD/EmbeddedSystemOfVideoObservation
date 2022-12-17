@@ -13,6 +13,8 @@ namespace IntegratedSystemBigBrother
 {
     public class CameraWatchingFromWallCentre : Camera
     {
+        public override string TypeKey { get { return "WallCentreCamera"; } }
+
         public override void DrawCorridor()
         {
             PathGeometry corridorGeometry = new PathGeometry();
@@ -45,60 +47,62 @@ namespace IntegratedSystemBigBrother
             Corridor = corridor;
         }
 
-        public override Storyboard BuildEmployeeArrivalAnimation(
-            Path employee,
-            TimeSpan duration)
+        public override Storyboard BuildEmployeeArrivalAnimation(TimeSpan duration)
         {
-            employee.StrokeThickness = 0.3;
-
             Thickness movingFrom = new Thickness(1, 2.5, 0, 0),
                       movingTo = new Thickness(9, 2.5, 0, 0);
             ThicknessAnimation employeeForwardMovingAnimation =
                 new ThicknessAnimation(movingFrom, movingTo, duration) { FillBehavior = FillBehavior.HoldEnd };
+
+            double strokeThicknessFrom = 0.3,
+                   strokeThicknessTo = 0.3;
+            DoubleAnimation employeeForwardStrokeThicknessAnimation =
+                new DoubleAnimation(strokeThicknessFrom, strokeThicknessTo, duration) { FillBehavior = FillBehavior.HoldEnd };
 
             Storyboard employeeStoryboard = new Storyboard()
             {
                 RepeatBehavior = RepeatBehavior.Forever
             };
             employeeStoryboard.Children.Add(employeeForwardMovingAnimation);
+            employeeStoryboard.Children.Add(employeeForwardStrokeThicknessAnimation);
 
             SetMarginActorProperty(employeeForwardMovingAnimation);
+            SetStrokeThicknessActorProperty(employeeForwardStrokeThicknessAnimation);
 
             SetDesiredFrameRateForStoryboard(employeeStoryboard);
 
             return employeeStoryboard;
         }
 
-        public override Storyboard BuildEmployeeDepartureAnimation(
-            Path employee,
-            TimeSpan duration)
+        public override Storyboard BuildEmployeeDepartureAnimation(TimeSpan duration)
         {
-            employee.StrokeThickness = 0.3;
-
             Thickness movingFrom = new Thickness(9, 2.5, 0, 0),
                       movingTo = new Thickness(1, 2.5, 0, 0);
             ThicknessAnimation employeeBackwardMovingAnimation =
                 new ThicknessAnimation(movingFrom, movingTo, duration) { FillBehavior = FillBehavior.HoldEnd };
-            
+
+            double strokeThicknessFrom = 0.3,
+                   strokeThicknessTo = 0.3;
+            DoubleAnimation employeeBackwardStrokeThicknessAnimation =
+                new DoubleAnimation(strokeThicknessFrom, strokeThicknessTo, duration) { FillBehavior = FillBehavior.HoldEnd };
+
             Storyboard employeeStoryboard = new Storyboard()
             {
                 RepeatBehavior = RepeatBehavior.Forever
             };
             employeeStoryboard.Children.Add(employeeBackwardMovingAnimation);
+            employeeStoryboard.Children.Add(employeeBackwardStrokeThicknessAnimation);
 
             SetMarginActorProperty(employeeBackwardMovingAnimation);
+            SetStrokeThicknessActorProperty(employeeBackwardStrokeThicknessAnimation);
 
             SetDesiredFrameRateForStoryboard(employeeStoryboard);
 
             return employeeStoryboard;
         }
 
-        public override Storyboard BuildOutsiderOnObjectAnimation(
-            Path outsider,
-            TimeSpan duration)
+        public override Storyboard BuildOutsiderOnObjectAnimation(TimeSpan duration)
         {
-            outsider.StrokeThickness = 0.3;
-
             TimeSpan backwardAnimationDelay = TimeSpan.FromSeconds(2);
 
             Thickness movingFrom = new Thickness(1, 2.5, 0, 0),
@@ -112,6 +116,11 @@ namespace IntegratedSystemBigBrother
                     BeginTime = duration + backwardAnimationDelay
                 };
 
+            double strokeThicknessFrom = 0.3,
+                   strokeThicknessTo = 0.3;
+            DoubleAnimation outsiderTwowayStrokeThicknessAnimation =
+                new DoubleAnimation(strokeThicknessFrom, strokeThicknessTo, duration + duration + backwardAnimationDelay) { FillBehavior = FillBehavior.HoldEnd };
+
             Storyboard outsiderStoryboard = new Storyboard()
             {
                 Duration = duration + duration + backwardAnimationDelay,
@@ -119,9 +128,11 @@ namespace IntegratedSystemBigBrother
             };
             outsiderStoryboard.Children.Add(outsiderForwardMovingAnimation);
             outsiderStoryboard.Children.Add(outsiderBackwardMovingAnimation);
+            outsiderStoryboard.Children.Add(outsiderTwowayStrokeThicknessAnimation);
 
             SetMarginActorProperty(outsiderForwardMovingAnimation);
             SetMarginActorProperty(outsiderBackwardMovingAnimation);
+            SetStrokeThicknessActorProperty(outsiderTwowayStrokeThicknessAnimation);
 
             SetDesiredFrameRateForStoryboard(outsiderStoryboard);
 

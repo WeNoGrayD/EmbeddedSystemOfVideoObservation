@@ -12,12 +12,17 @@ namespace IntegratedSystemBigBrother
     {
         protected Camera _listenedCamera;
 
+        public readonly string CameraName;
+
         protected static bool _stopListenCamera;
 
-        public CameraListener(Camera listenedCamera)
+        protected CameraDataPackage.EventDescription _observedEvent;
+
+        public CameraListener(PeripheralProcessor listenedPPU)
         {
             _stopListenCamera = false;
-            _listenedCamera = listenedCamera;
+            _listenedCamera = listenedPPU.AgregatedCamera;
+            CameraName = listenedPPU.CameraName;
         }
 
         public void Listen()
@@ -41,32 +46,52 @@ namespace IntegratedSystemBigBrother
 
         public virtual void Visit(CameraStandardSituationDataPackage package)
         {
-            ISBBViewModel.ShowCorridor(_listenedCamera);
+            if (package.MessageImportance != _observedEvent)
+            {
+                _observedEvent = package.MessageImportance;
+                ISBBViewModel.ClearChildrenFromScreenDispatched();
+                ISBBViewModel.ShowCorridor(_listenedCamera);
+            }
         }
 
         public virtual void Visit(CameraEmployeeArrivalDataPackage package)
         {
-            ISBBViewModel.ShowCorridor(_listenedCamera);
-            ISBBViewModel.ShowEmployee(_listenedCamera);
+            if (package.MessageImportance != _observedEvent)
+            {
+                _observedEvent = package.MessageImportance;
+                ISBBViewModel.ClearChildrenFromScreenDispatched();
+                ISBBViewModel.ShowCorridor(_listenedCamera);
+                ISBBViewModel.ShowEmployee(_listenedCamera);
+            }
         }
 
         public virtual void Visit(CameraEmployeeDepartureDataPackage package)
         {
-            ISBBViewModel.ShowCorridor(_listenedCamera);
-            ISBBViewModel.ShowEmployee(_listenedCamera);
+            if (package.MessageImportance != _observedEvent)
+            {
+                _observedEvent = package.MessageImportance;
+                ISBBViewModel.ClearChildrenFromScreenDispatched();
+                ISBBViewModel.ShowCorridor(_listenedCamera);
+                ISBBViewModel.ShowEmployee(_listenedCamera);
+            }
         }
 
         public virtual void Visit(CameraOutsiderOnObjectDataPackage package)
         {
-            ISBBViewModel.ShowCorridor(_listenedCamera);
-            ISBBViewModel.ShowOutsider(_listenedCamera);
+            if (package.MessageImportance != _observedEvent)
+            {
+                _observedEvent = package.MessageImportance;
+                ISBBViewModel.ClearChildrenFromScreenDispatched();
+                ISBBViewModel.ShowCorridor(_listenedCamera);
+                ISBBViewModel.ShowOutsider(_listenedCamera);
+            }
         }
     }
 
     public class CameraOnScreenListener : CameraListener
     {
-        public CameraOnScreenListener(Camera listenedCamera) 
-            : base(listenedCamera)
+        public CameraOnScreenListener(PeripheralProcessor listenedPPU) 
+            : base(listenedPPU)
         { }
     }
 

@@ -13,6 +13,8 @@ namespace IntegratedSystemBigBrother
 {
     public class CameraWatchingFromLeftCornerWall : Camera
     {
+        public override string TypeKey { get { return "LeftCornerWallCamera"; } }
+
         public override void DrawCorridor()
         {
             PathGeometry corridorGeometry = new PathGeometry();
@@ -45,9 +47,7 @@ namespace IntegratedSystemBigBrother
             Corridor = corridor;
         }
 
-        public override Storyboard BuildEmployeeArrivalAnimation(
-            Path employee,
-            TimeSpan duration)
+        public override Storyboard BuildEmployeeArrivalAnimation(TimeSpan duration)
         {
             Thickness movingFrom = new Thickness(4, 3.3, 0, 0),
                       movingTo = new Thickness(6, 2, 0, 0);
@@ -85,9 +85,7 @@ namespace IntegratedSystemBigBrother
             return employeeStoryboard;
         }
 
-        public override Storyboard BuildEmployeeDepartureAnimation(
-            Path employee,
-            TimeSpan duration)
+        public override Storyboard BuildEmployeeDepartureAnimation(TimeSpan duration)
         {
             Thickness movingFrom = new Thickness(6, 2, 0, 0),
                       movingTo = new Thickness(4, 3.3, 0, 0);
@@ -125,9 +123,7 @@ namespace IntegratedSystemBigBrother
             return employeeStoryboard;
         }
 
-        public override Storyboard BuildOutsiderOnObjectAnimation(
-            Path outsider,
-            TimeSpan duration)
+        public override Storyboard BuildOutsiderOnObjectAnimation(TimeSpan duration)
         {
             TimeSpan backwardAnimationDelay = TimeSpan.FromSeconds(2);
 
