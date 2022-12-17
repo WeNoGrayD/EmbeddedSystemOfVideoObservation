@@ -79,7 +79,8 @@ namespace IntegratedSystemBigBrother
         {
             if (Animation != null)
             {
-                Actor.Dispatch(() => Actor.BeginStoryboard(Animation));
+                //Actor.Dispatch(() => Actor.BeginStoryboard(Animation, HandoffBehavior.SnapshotAndReplace, true));
+                ISBBViewModel.DispatchAnimation(Animation, () => Animation.Begin(Actor, true));
             }
         }
 
@@ -88,9 +89,9 @@ namespace IntegratedSystemBigBrother
             if (Animation != null)
             {
                 //Animation.Dispatch((Action)Animation.SkipToFill);
-                Animation.Dispatch((Action)Animation.Stop);
-                Animation.Dispatch((Action)Animation.Remove);
-                Animation = null;
+                Animation.Dispatch(() => Animation.Stop(Actor));
+                //Animation.Dispatch((Action)Animation.Remove);
+                //Animation = null;
             }
         }
 

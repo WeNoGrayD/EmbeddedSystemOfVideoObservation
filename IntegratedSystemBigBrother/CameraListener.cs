@@ -96,15 +96,15 @@ namespace IntegratedSystemBigBrother
         public async Task StartObserve(PeripheralProcessor ppu, CameraBehaviorRecord behaviorRecord)
         {
             //DispatchScreen(() => AddChildOnScreen(ppu.AgregatedCamera.Actor, ""));
-            /*
+            
+            await _listenedCamera.StartObserve();
+
             if (behaviorRecord.IsRunning)
             {
                 Storyboard animation = _listenedCamera.Animation;
                 TimeSpan seekTime = behaviorRecord.Duration - behaviorRecord.TimeToEnd;
-                ISBBViewModel.DispatchAnimation(animation, () => animation.Seek(seekTime));
+                ISBBViewModel.DispatchAnimation(animation, () => animation.Seek(_listenedCamera.Actor, seekTime, TimeSeekOrigin.BeginTime));
             }
-            */
-            await _listenedCamera.StartObserve();
             ISBBViewModel.AddActorOnScreen(_listenedCamera.Actor, "actor");
         }
 
