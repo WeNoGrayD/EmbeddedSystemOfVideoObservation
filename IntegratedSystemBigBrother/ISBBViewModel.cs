@@ -130,6 +130,7 @@ namespace IntegratedSystemBigBrother
         private static void DisposeListener()
         {
             _currentListener?.Dispose();
+            _currentListener = null;
         }
 
         private static void TurnOffScreen()
