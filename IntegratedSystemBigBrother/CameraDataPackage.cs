@@ -23,7 +23,7 @@ namespace IntegratedSystemBigBrother
 
         public DateTime TimeStamp { get; protected set; }
 
-        public readonly EventDescription MessageImportance;
+        public EventDescription MessageImportance { get; protected set; }
 
         public string Message { get { return GetMessage(); } }
 

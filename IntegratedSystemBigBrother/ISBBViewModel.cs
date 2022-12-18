@@ -14,6 +14,8 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Globalization;
+using System.Windows.Markup;
 
 namespace IntegratedSystemBigBrother
 {
@@ -63,7 +65,7 @@ namespace IntegratedSystemBigBrother
             cam1.AddOutsiderOnObjectToSchedule(TimeSpan.FromSeconds(25));
 
             
-            cam2.AddEmployeeDepartureToSchedule(TimeSpan.FromSeconds(20), "Олег Егорыч");
+            cam2.AddOutsiderOnObjectToSchedule(TimeSpan.FromSeconds(20));
             cam2.AddStandardSituationToSchedule(TimeSpan.FromSeconds(10));
             cam2.AddEmployeeArrivalToSchedule(TimeSpan.FromSeconds(15), "Вадим Вадимыч");
 
@@ -87,6 +89,13 @@ namespace IntegratedSystemBigBrother
 
         private static void InitStaticResources()
         {
+            //CultureInfo.CurrentCulture = new CultureInfo("ru-RU");
+            CultureInfo.CurrentUICulture = new CultureInfo("ru-RU");
+            FrameworkElement.LanguageProperty.OverrideMetadata(
+                typeof(FrameworkElement),
+                new FrameworkPropertyMetadata(
+                    XmlLanguage.GetLanguage("ru-RU")));
+
             Path employee = Camera.DrawEmployee(),
                  outsider = Camera.DrawOutsider();
 
@@ -137,7 +146,7 @@ namespace IntegratedSystemBigBrother
             DisposeListener();
             //UnsubscribeOnSchedulerEvents();
             DispatchScreen(() => ClearChildrenFromScreen());
-            DispatchScreen(() => SetScreenBackground(Brushes.Transparent));
+            DispatchScreen(() => SetScreenBackground(Brushes.White));
             //_currentCamera = selectedCamera;
             _currentListener = new CameraOnScreenListener(selectedPPU);
             Task.Run(_currentListener.Listen);
@@ -246,7 +255,7 @@ namespace IntegratedSystemBigBrother
         {
             GridView eventLogGridView = (GridView)ISBBViewModel.View.EventLog.View;
             double eventLogActualWidth = ISBBViewModel.View.EventLog.ActualWidth;
-            double[] columnWidthPercentage = new double[4] { 0.09, 0.3, 0.15, 0.45 };
+            double[] columnWidthPercentage = new double[4] { 0.1, 0.2, 0.2, 0.5 };
 
             for (int i = 0; i < columnWidthPercentage.Length; i++)
                 eventLogGridView.Columns[i].Width = eventLogActualWidth * columnWidthPercentage[i];

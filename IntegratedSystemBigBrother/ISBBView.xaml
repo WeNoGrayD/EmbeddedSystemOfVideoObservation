@@ -4,40 +4,64 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:IntegratedSystemBigBrother"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="Система управления видеонаблюдением" Height="450" Width="800">
+        Title="Система управления видеонаблюдением" Height="450" Width="800"
+        Background="#FFDD00">
+    <Window.Resources>
+        <FontFamily x:Key="FontFamily">Verdana</FontFamily>
+        <sys:Int32 x:Key="FontSize">20</sys:Int32>
+        <Style TargetType="Label">
+            <Setter Property="FontFamily" Value="{Binding Source={StaticResource FontFamily}}"/>
+            <Setter Property="FontSize" Value="{Binding Source={StaticResource FontSize}}"/>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="FontFamily" Value="{Binding Source={StaticResource FontFamily}}"/>
+            <Setter Property="FontSize" Value="{Binding Source={StaticResource FontSize}}"/>
+        </Style>
+        <Style TargetType="ListView">
+            <Setter Property="FontFamily" Value="{Binding Source={StaticResource FontFamily}}"/>
+            <Setter Property="FontSize" Value="{Binding Source={StaticResource FontSize}}"/>
+        </Style>
+        <Style TargetType="ListViewItem">
+            <Setter Property="FontFamily" Value="{Binding Source={StaticResource FontFamily}}"/>
+            <Setter Property="FontSize" Value="{Binding Source={StaticResource FontSize}}"/>
+        </Style>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="0.1*"/>
-            <RowDefinition Height="0.2*"/>
+            <RowDefinition Height="0.3*"/>
+            <RowDefinition Height="0.1*"/>
             <RowDefinition Height="0.8*"/>
+            <RowDefinition Height="0.1*"/>
+            <RowDefinition Height="0.5*"/>
             <RowDefinition Height="0.1*"/>
         </Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="0.1*"/>
-            <ColumnDefinition Width="0.5*"/>
-            <ColumnDefinition Width="0.6*"/>
-            <ColumnDefinition Width="0.1*"/>
-        </Grid.ColumnDefinitions>
-
-        <StackPanel Orientation="Vertical" 
-                    Grid.Row="1" Grid.Column="1">
+        <StackPanel Orientation="Vertical"
+                    Margin="20,0,20,0" 
+                    Grid.Row="1" >
 
             <Label>Выбор камеры</Label>
 
             <ComboBox Name="CameraSelector"
-                      Margin="3,3,3,3"
                       ItemsSource="{Binding Path=Network.Keys}"
                       SelectedIndex="0"
                       SelectionChanged="OnCameraSelectorSelectionChanged"/>
 
         </StackPanel>
 
-        <Grid Grid.Row="2" Grid.Column="1">
-            
+        <Viewbox Grid.Row="3" 
+                 Margin="10, 10, 10, 10">
+            <Grid Name="Screen" Width="12" Height="8"/>
+        </Viewbox>
+
+        <Grid Grid.Row="5"
+              Margin="20,0,20,0">
+
             <Grid.RowDefinitions>
-                <RowDefinition Height="0.1*"/>
+                <RowDefinition Height="0.2*"/>
                 <RowDefinition Height="0.8*"/>
             </Grid.RowDefinitions>
 
@@ -54,10 +78,15 @@
 
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn DisplayMemberBinding="{Binding Path=Importance, Converter={StaticResource ImportanceConverter}}">
-                            
+                        <GridViewColumn>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Image Width="25px" Height="25px" Stretch="Fill"
+                                           Source="{Binding Path=MessageImportance, Converter={StaticResource ImportanceConverter}}"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding="{Binding Path=TimeStamp}">
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=TimeStamp, StringFormat={}{0:G}}">
                             Время
                         </GridViewColumn>
                         <GridViewColumn DisplayMemberBinding="{Binding Path=CameraName}">
@@ -72,18 +101,6 @@
             </ListView>
 
         </Grid>
-
-        <StackPanel Orientation="Vertical" 
-                    Grid.Row="1" Grid.RowSpan="2" Grid.Column="2">
-
-            <!--<Image Source="D:\\Bricker\\myAvatar256.png"></Image>-->
-
-        </StackPanel>
-
-        <Viewbox Grid.Row="1" Grid.RowSpan="2" Grid.Column="2"
-                 Margin="10, 10, 10, 10">
-            <Grid Name="Screen" Width="12" Height="8"/>
-        </Viewbox>
 
     </Grid>
 </Window>
