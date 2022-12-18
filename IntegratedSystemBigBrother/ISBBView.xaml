@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:IntegratedSystemBigBrother"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="Система управления видеонаблюдением" Height="450" Width="800"
+        Title="Система управления видеонаблюдением" 
+        WindowState="Maximized"
         Background="#FFDD00">
     <Window.Resources>
         <FontFamily x:Key="FontFamily">Verdana</FontFamily>
